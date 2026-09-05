@@ -96,24 +96,40 @@
         <div class="space-y-1.5 text-sm">
           <div class="flex justify-between"><span class="text-gray-500">Cliente:</span><span id="pv_cliente" class="font-semibold text-right">-</span></div>
           <div class="flex justify-between"><span class="text-gray-500">Grupo:</span><span id="pv_grupo" class="font-semibold text-right">-</span></div>
-          <div class="flex justify-between"><span class="text-gray-500">Último pago:</span><span id="pv_fecha" class="font-semibold text-right">-</span></div>
         </div>
-        <div class="border-t border-dashed border-gray-300 my-3"></div>
-        <div class="space-y-1.5 text-sm">
-          <div class="flex justify-between"><span class="text-gray-500">Último abono:</span><span id="pv_cuotas" class="font-semibold">-</span></div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-500">Monto del último pago:</span>
-            <span id="pv_monto" class="font-extrabold text-brand-800 text-lg">-</span>
-          </div>
-        </div>
-        <div class="border-t border-dashed border-gray-300 my-3"></div>
-        <div class="space-y-1.5 text-sm">
-          <div class="flex justify-between"><span class="text-gray-500">Quincenas acumuladas:</span><span id="pv_acumuladas" class="font-semibold">-</span></div>
-          <div class="flex justify-between"><span class="text-gray-500">Quincenas restantes:</span><span id="pv_restantes" class="font-semibold">-</span></div>
-        </div>
-        <div class="mt-4 text-center">
+        <div class="mt-3 text-center">
           <span id="pv_estado" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold">-</span>
         </div>
+
+        <div class="border-t border-dashed border-gray-300 my-3"></div>
+
+        <!-- Resumen del contrato: cuánto es, cuánto ha pagado y cuánto debe -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-gray-50 rounded-xl p-2">
+            <p class="text-[10px] text-gray-500 uppercase tracking-wide">Contrato</p>
+            <p id="pv_montoContrato" class="font-extrabold text-brand-900 text-sm mt-0.5">-</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-2">
+            <p class="text-[10px] text-gray-500 uppercase tracking-wide">Pagado</p>
+            <p id="pv_montoPagado" class="font-extrabold text-brand-900 text-sm mt-0.5">-</p>
+          </div>
+          <div class="bg-black rounded-xl p-2">
+            <p class="text-[10px] text-gray-300 uppercase tracking-wide">Debe</p>
+            <p id="pv_montoPendiente" class="font-extrabold text-white text-sm mt-0.5">-</p>
+          </div>
+        </div>
+
+        <div class="space-y-1.5 text-sm mt-3">
+          <div class="flex justify-between"><span class="text-gray-500">Quincenas pagadas:</span><span id="pv_acumuladas" class="font-semibold">-</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Quincenas restantes:</span><span id="pv_restantes" class="font-semibold">-</span></div>
+        </div>
+
+        <div class="border-t border-dashed border-gray-300 my-3"></div>
+
+        <!-- Historial completo de pagos: fecha, hora exacta, cuotas, monto y referencia -->
+        <p class="text-xs font-bold text-brand-900 mb-2">Historial de pagos</p>
+        <div id="pv_historial" class="space-y-2 text-xs"></div>
+
         <p class="text-center text-[11px] text-gray-400 mt-5">Este es un enlace de solo lectura. Para dudas sobre tu cuenta comunícate directamente.</p>
       </div>
       <div class="no-print p-4 border-t border-gray-100 bg-white">
@@ -454,6 +470,7 @@
         <div class="flex justify-between"><span class="text-gray-500">Grupo:</span><span id="v_grupo" class="font-semibold text-right">-</span></div>
         <div class="flex justify-between"><span class="text-gray-500">Fecha:</span><span id="v_fecha" class="font-semibold text-right">-</span></div>
         <div class="flex justify-between"><span class="text-gray-500">Hora:</span><span id="v_hora" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Referencia:</span><span id="v_referencia" class="font-semibold text-right">-</span></div>
       </div>
 
       <div class="border-t border-dashed border-gray-300 my-3"></div>
@@ -468,7 +485,23 @@
 
       <div class="border-t border-dashed border-gray-300 my-3"></div>
 
-      <div class="space-y-1.5 text-sm">
+      <!-- Resumen del contrato: cuánto es, cuánto ha pagado en total y cuánto debe -->
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-gray-50 rounded-xl p-2">
+          <p class="text-[10px] text-gray-500 uppercase tracking-wide">Contrato</p>
+          <p id="v_montoContrato" class="font-extrabold text-brand-900 text-sm mt-0.5">-</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-2">
+          <p class="text-[10px] text-gray-500 uppercase tracking-wide">Pagado</p>
+          <p id="v_montoPagado" class="font-extrabold text-brand-900 text-sm mt-0.5">-</p>
+        </div>
+        <div class="bg-black rounded-xl p-2">
+          <p class="text-[10px] text-gray-300 uppercase tracking-wide">Debe</p>
+          <p id="v_montoPendiente" class="font-extrabold text-white text-sm mt-0.5">-</p>
+        </div>
+      </div>
+
+      <div class="space-y-1.5 text-sm mt-3">
         <div class="flex justify-between"><span class="text-gray-500">Quincenas acumuladas:</span><span id="v_acumuladas" class="font-semibold">-</span></div>
         <div class="flex justify-between"><span class="text-gray-500">Quincenas restantes:</span><span id="v_restantes" class="font-semibold">-</span></div>
       </div>
@@ -477,7 +510,7 @@
         <span id="v_estado" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold">-</span>
       </div>
 
-      <p class="text-center text-[11px] text-gray-400 mt-5">¡Gracias por su puntualidad y confianza!</p>
+      <p class="text-center text-[11px] text-gray-400 mt-5">¡Gracias por su puntualidad y confianza!<br>Consulta tu estado de cuenta cuando quieras escaneando o abriendo tu enlace personal.</p>
     </div>
 
     <div class="no-print p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
@@ -583,6 +616,12 @@ function boot() {
 
 /* ---------- 1.1 VISTA PÚBLICA DE SOLO-VOUCHER (enlace de recordatorio) ---------- */
 
+// Genera un folio corto y legible a partir del ID del documento de Firestore
+// (los últimos 6 caracteres, en mayúsculas) para usarlo como "referencia de pago".
+function folioCorto(id) {
+  return '#' + id.slice(-6).toUpperCase();
+}
+
 async function mostrarVoucherPublico(clienteId) {
   document.getElementById('publicVoucherView').classList.remove('hidden');
   try {
@@ -590,18 +629,24 @@ async function mostrarVoucherPublico(clienteId) {
     if (!doc.exists) { mostrarErrorVoucherPublico(); return; }
     const cliente = { id: doc.id, ...doc.data() };
 
-    // Trae el último pago registrado (si existe) para mostrar el detalle del último movimiento.
-    let ultimoPago = null;
+    // Trae TODO el historial de pagos de este cliente (más reciente primero)
+    // para poder mostrar el estado de cuenta completo: fecha y hora exacta,
+    // cuotas, monto y referencia de cada movimiento.
+    let pagos = [];
     try {
       const pagosSnap = await db.collection('clientes').doc(clienteId)
-        .collection('pagos').orderBy('fecha', 'desc').limit(1).get();
-      if (!pagosSnap.empty) ultimoPago = pagosSnap.docs[0].data();
+        .collection('pagos').orderBy('fecha', 'desc').get();
+      pagos = pagosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     } catch (e) { /* si no hay pagos aún, se ignora */ }
 
-    const total = cliente.totalQuincenas || 0;
+    const totalQuincenas = cliente.totalQuincenas || 0;
     const pagadas = cliente.quincenasPagadas || 0;
-    const restantes = Math.max(total - pagadas, 0);
-    const estado = estadoCuenta(pagadas, total);
+    const restantes = Math.max(totalQuincenas - pagadas, 0);
+    const estado = estadoCuenta(pagadas, totalQuincenas);
+    const montoContrato = (cliente.montoCuota || 0) * totalQuincenas;
+    const montoPagado = (cliente.montoCuota || 0) * pagadas;
+    const montoPendiente = (cliente.montoCuota || 0) * restantes;
+
     let grupoNombre = cliente.grupoId || '-';
     try {
       const gDoc = await db.collection('grupos').doc(cliente.grupoId).get();
@@ -610,24 +655,36 @@ async function mostrarVoucherPublico(clienteId) {
 
     document.getElementById('pv_cliente').textContent = `${cliente.nombre} ${cliente.apellido}`;
     document.getElementById('pv_grupo').textContent = grupoNombre;
-    document.getElementById('pv_acumuladas').textContent = `${pagadas}/${total}`;
+    document.getElementById('pv_acumuladas').textContent = `${pagadas}/${totalQuincenas}`;
     document.getElementById('pv_restantes').textContent = restantes;
-
-    if (ultimoPago) {
-      const fechaPago = ultimoPago.fecha && ultimoPago.fecha.toDate ? ultimoPago.fecha.toDate() : new Date();
-      document.getElementById('pv_fecha').textContent = fechaPago.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
-      document.getElementById('pv_cuotas').textContent = ultimoPago.cuotasPagadas ?? '-';
-      document.getElementById('pv_monto').textContent = formatMoney(ultimoPago.monto);
-    } else {
-      document.getElementById('pv_fecha').textContent = 'Sin pagos registrados aún';
-      document.getElementById('pv_cuotas').textContent = '-';
-      document.getElementById('pv_monto').textContent = '-';
-    }
+    document.getElementById('pv_montoContrato').textContent = formatMoney(montoContrato);
+    document.getElementById('pv_montoPagado').textContent = formatMoney(montoPagado);
+    document.getElementById('pv_montoPendiente').textContent = formatMoney(montoPendiente);
 
     const estadoEl = document.getElementById('pv_estado');
     estadoEl.textContent = estado;
     estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
       (estado === 'Completado' ? 'bg-black text-white' : 'bg-brand-100 text-brand-700');
+
+    // Construye la lista del historial de pagos con fecha, hora y referencia exactas
+    const historialEl = document.getElementById('pv_historial');
+    if (!pagos.length) {
+      historialEl.innerHTML = '<p class="text-gray-400 text-center py-2">Aún no hay pagos registrados.</p>';
+    } else {
+      historialEl.innerHTML = pagos.map(p => {
+        const f = p.fecha && p.fecha.toDate ? p.fecha.toDate() : null;
+        const fechaStr = f ? f.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+        const horaStr = f ? f.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '-';
+        return `
+        <div class="flex items-center justify-between border border-gray-200 rounded-xl px-3 py-2">
+          <div>
+            <p class="font-semibold text-brand-900">${fechaStr} &middot; ${horaStr}</p>
+            <p class="text-gray-500">${p.cuotasPagadas ?? '-'} cuota(s) &middot; Ref. ${folioCorto(p.id)}</p>
+          </div>
+          <p class="font-extrabold text-brand-900">${formatMoney(p.monto)}</p>
+        </div>`;
+      }).join('');
+    }
 
     document.getElementById('pv_loading').classList.add('hidden');
     document.getElementById('pv_card').classList.remove('hidden');
@@ -1167,8 +1224,9 @@ document.getElementById('formPago').addEventListener('submit', async (e) => {
       actualizado: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Guarda un registro histórico del pago (subcolección)
-    await db.collection('clientes').doc(cliente.id).collection('pagos').add({
+    // Guarda un registro histórico del pago (subcolección); su propio ID de
+    // documento se usa como número de referencia/folio del comprobante.
+    const pagoRef = await db.collection('clientes').doc(cliente.id).collection('pagos').add({
       cuotasPagadas: cuotas,
       monto: montoPago,
       quincenasAcumuladasDespues: nuevasPagadas,
@@ -1181,7 +1239,7 @@ document.getElementById('formPago').addEventListener('submit', async (e) => {
     mostrarVoucher({
       cliente, cuotas, monto: montoPago,
       pagadas: nuevasPagadas, restantes: Math.max(total - nuevasPagadas, 0),
-      total, fecha: ahora,
+      total, fecha: ahora, referencia: folioCorto(pagoRef.id),
     });
   } catch (err) {
     showToast('Error al registrar pago: ' + err.message);
@@ -1190,18 +1248,26 @@ document.getElementById('formPago').addEventListener('submit', async (e) => {
 
 /* ---------- 8. VOUCHER DIGITAL + WHATSAPP + IMPRESIÓN ---------- */
 
-function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fecha }) {
+function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fecha, referencia }) {
   const fechaStr = fecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
   const horaStr = fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
   const estado = estadoCuenta(pagadas, total);
   const grupoNombre = nombreGrupo(cliente.grupoId);
+  const montoContrato = (cliente.montoCuota || 0) * total;
+  const montoPagado = (cliente.montoCuota || 0) * pagadas;
+  const montoPendiente = (cliente.montoCuota || 0) * restantes;
+  const link = urlVoucherPublico(cliente.id);
 
   document.getElementById('v_cliente').textContent = `${cliente.nombre} ${cliente.apellido}`;
   document.getElementById('v_grupo').textContent = grupoNombre;
   document.getElementById('v_fecha').textContent = fechaStr;
   document.getElementById('v_hora').textContent = horaStr;
+  document.getElementById('v_referencia').textContent = referencia;
   document.getElementById('v_cuotas').textContent = cuotas;
   document.getElementById('v_monto').textContent = formatMoney(monto);
+  document.getElementById('v_montoContrato').textContent = formatMoney(montoContrato);
+  document.getElementById('v_montoPagado').textContent = formatMoney(montoPagado);
+  document.getElementById('v_montoPendiente').textContent = formatMoney(montoPendiente);
   document.getElementById('v_acumuladas').textContent = `${pagadas}/${total}`;
   document.getElementById('v_restantes').textContent = restantes;
 
@@ -1210,10 +1276,12 @@ function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fec
   estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
     (estado === 'Completado' ? 'bg-black text-white' : 'bg-brand-100 text-brand-700');
 
-  // Construye el mensaje formateado para WhatsApp
+  // Construye el mensaje formateado para WhatsApp, incluyendo el enlace al
+  // estado de cuenta online para que el cliente lo pueda consultar cuando quiera.
   const mensaje =
 `*Plan de Ahorro Caridad* 🤝
 Comprobante de Pago
+Ref. ${referencia}
 
 Cliente: ${cliente.nombre} ${cliente.apellido}
 Grupo: ${grupoNombre}
@@ -1222,9 +1290,16 @@ Fecha: ${fechaStr} - ${horaStr}
 Cuotas abonadas ahora: ${cuotas}
 Monto pagado: ${formatMoney(monto)}
 
+Contrato: ${formatMoney(montoContrato)}
+Pagado a la fecha: ${formatMoney(montoPagado)}
+Pendiente por pagar: ${formatMoney(montoPendiente)}
+
 Quincenas acumuladas: ${pagadas}/${total}
 Quincenas restantes: ${restantes}
 Estado de cuenta: *${estado}*
+
+Consulta tu estado de cuenta cuando quieras en este enlace:
+${link}
 
 ¡Gracias por su pago puntual! 🙏`;
 

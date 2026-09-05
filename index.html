@@ -608,6 +608,21 @@ function boot() {
   const params = new URLSearchParams(location.search);
   const idPublico = params.get('ver');
 
+  if (idPublico) {
+    // El link público SIEMPRE usa las credenciales precargadas en el código,
+    // nunca lo que este navegador tenga guardado en localStorage (podría ser
+    // una configuración vieja o incompleta guardada a mano en otra prueba).
+    // Además, un cliente jamás debe ver la pantalla de configuración del
+    // administrador: si algo falla, se le muestra el error del voucher.
+    try {
+      initFirebaseApp(FIREBASE_CONFIG_PLACEHOLDER);
+    } catch (e) {
+      console.error(e);
+    }
+    mostrarVoucherPublico(idPublico);
+    return;
+  }
+
   const saved = getSavedConfig();
   const cfg = saved || (FIREBASE_CONFIG_PLACEHOLDER.apiKey ? FIREBASE_CONFIG_PLACEHOLDER : null);
   if (!cfg) {
@@ -619,11 +634,6 @@ function boot() {
   } catch (e) {
     console.error(e);
     document.getElementById('configScreen').classList.remove('hidden');
-    return;
-  }
-
-  if (idPublico) {
-    mostrarVoucherPublico(idPublico);
     return;
   }
 

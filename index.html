@@ -75,7 +75,9 @@
 <div id="publicVoucherView" class="hidden fixed inset-0 z-[100] bg-brand-950 flex items-center justify-center p-4 overflow-y-auto">
   <div class="w-full max-w-sm">
     <div class="text-center text-white mb-4">
-      <div class="text-3xl mb-1">🤝</div>
+      <div class="flex items-center justify-center mb-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-9 h-9"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+      </div>
       <h1 class="font-extrabold text-lg">Plan de Ahorro Caridad</h1>
       <p class="text-xs text-brand-300">Consulta de comprobante</p>
     </div>
@@ -85,7 +87,9 @@
     <div id="pv_card" class="hidden bg-white rounded-3xl overflow-hidden">
       <div id="printAreaPublic" class="print-area p-6">
         <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
-          <div class="text-3xl mb-1">🤝</div>
+          <div class="flex items-center justify-center mb-1 text-brand-900">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+          </div>
           <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
           <p class="text-xs text-gray-500">Estado de Cuenta / Comprobante</p>
         </div>
@@ -114,7 +118,8 @@
       </div>
       <div class="no-print p-4 border-t border-gray-100 bg-white">
         <button id="pv_imprimir" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
-          <span>🖨️</span> Imprimir comprobante
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
+          Imprimir comprobante
         </button>
       </div>
     </div>
@@ -128,7 +133,9 @@
 <div id="configScreen" class="fixed inset-0 z-[100] bg-gradient-to-br from-brand-800 to-brand-950 flex items-center justify-center p-4 overflow-y-auto">
   <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 my-8">
     <div class="flex flex-col items-center text-center mb-6">
-      <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center text-3xl shadow-card mb-3">🤝</div>
+      <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center text-white shadow-card mb-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+      </div>
       <h1 class="text-xl font-extrabold text-brand-900">Plan de Ahorro Caridad</h1>
       <p class="text-sm text-gray-500 mt-1">Conecta la aplicación a tu proyecto de Firebase para comenzar a gestionar tus grupos, clientes y pagos.</p>
     </div>
@@ -170,7 +177,7 @@
       <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 active:scale-[.98] transition text-white font-bold py-3 rounded-xl shadow-card">
         Guardar y Conectar
       </button>
-      <p id="cfgError" class="text-xs font-bold text-black text-center hidden">⚠️ No se pudo conectar. Verifica tus credenciales.</p>
+      <p id="cfgError" class="flex items-center justify-center gap-1 text-xs font-bold text-black text-center hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.82-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0L2.7 16.13ZM12 15.75h.007v.008H12v-.008Z"/></svg> No se pudo conectar. Verifica tus credenciales.</p>
       <p class="text-[11px] text-gray-400 text-center pt-1">Tus credenciales se guardan solo en este dispositivo (localStorage).</p>
     </form>
   </div>
@@ -185,13 +192,14 @@
   <header class="sticky top-0 z-30 bg-gradient-to-r from-brand-700 to-brand-600 text-white px-4 pt-5 pb-6 rounded-b-3xl shadow-card">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl">🤝</div>
+        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+        </div>
         <div>
           <h1 class="font-extrabold text-lg leading-tight">Plan de Ahorro Caridad</h1>
           <p class="text-[11px] text-brand-100">Cobros: día 15 y último de mes</p>
         </div>
       </div>
-      <button id="btnSettings" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-lg" title="Ajustes de Firebase">⚙️</button>
     </div>
 
     <!-- Resumen rápido -->
@@ -218,7 +226,9 @@
       <div class="flex items-center gap-2">
         <div class="relative flex-1">
           <input id="buscarCliente" type="text" placeholder="Buscar cliente por nombre..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-brand-500 outline-none text-sm">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔎</span>
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m21 21-5.2-5.2m0 0a7.5 7.5 0 1 0-10.6 0 7.5 7.5 0 0 0 10.6 0Z"/></svg>
+          </span>
         </div>
         <select id="filtroGrupoClientes" class="px-2 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm text-sm max-w-[110px]">
           <option value="">Todos</option>
@@ -226,7 +236,8 @@
       </div>
 
       <button id="btnFiltroMorosos" type="button" class="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-600">
-        <span>⚠️</span> Ver solo morosos
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.82-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0L2.7 16.13ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+        Ver solo morosos
       </button>
 
       <div id="listaClientes" class="space-y-3"></div>
@@ -257,13 +268,16 @@
   <nav class="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
     <div class="max-w-lg mx-auto grid grid-cols-3 text-center">
       <button data-tab="clientes" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-brand-700">
-        <span class="text-lg">👥</span><span class="text-[11px] font-semibold">Clientes</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M17 20v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9" cy="7" r="3.2"/><path d="M22 20v-1a3.5 3.5 0 0 0-2.7-3.4"/><path d="M15.5 3.6a3.2 3.2 0 0 1 0 6.2"/></svg>
+        <span class="text-[11px] font-semibold">Clientes</span>
       </button>
       <button data-tab="grupos" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-gray-400">
-        <span class="text-lg">🗂️</span><span class="text-[11px] font-semibold">Grupos</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+        <span class="text-[11px] font-semibold">Grupos</span>
       </button>
       <button data-tab="ajustes" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-gray-400">
-        <span class="text-lg">⚙️</span><span class="text-[11px] font-semibold">Ajustes</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.751.43.991l1.005.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.214 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.751-.43-.991l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+        <span class="text-[11px] font-semibold">Ajustes</span>
       </button>
     </div>
   </nav>
@@ -292,6 +306,16 @@
         <div>
           <label class="text-xs font-semibold text-gray-600">Total de quincenas</label>
           <input required id="grupo_quincenas" type="number" min="1" step="1" placeholder="20" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Fecha de inicio</label>
+          <input required id="grupo_fechaInicio" type="date" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Fecha de cierre</label>
+          <input required id="grupo_fechaCierre" type="date" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
         </div>
       </div>
       <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-card">Guardar Grupo</button>
@@ -358,7 +382,7 @@
       <!-- Marca manual de moroso: habilita el botón de recordatorio y el filtro de morosos -->
       <label class="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 cursor-pointer">
         <input id="cliente_esMoroso" type="checkbox" class="mt-0.5">
-        <span class="text-xs text-gray-600"><span class="font-semibold text-brand-900">⚠️ Marcar como moroso</span><br>Aparecerá resaltado y podrás enviarle un recordatorio de pago por WhatsApp.</span>
+        <span class="text-xs text-gray-600"><span class="font-semibold text-brand-900 inline-flex items-center gap-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.82-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0L2.7 16.13ZM12 15.75h.007v.008H12v-.008Z"/></svg> Marcar como moroso</span><br>Aparecerá resaltado y podrás enviarle un recordatorio de pago por WhatsApp.</span>
       </label>
 
       <button type="submit" class="w-full mt-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl shadow-card">Guardar Cliente</button>
@@ -418,7 +442,9 @@
 
     <div id="printArea" class="print-area p-6 overflow-y-auto scrollbar-none">
       <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
-        <div class="text-3xl mb-1">🤝</div>
+        <div class="flex items-center justify-center mb-1 text-brand-900">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+        </div>
         <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
         <p class="text-xs text-gray-500">Comprobante de Pago</p>
       </div>
@@ -456,10 +482,12 @@
 
     <div class="no-print p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
       <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
-        <span>📱</span> WhatsApp
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20.25 8.51c.88.28 1.5 1.13 1.5 2.1v4.28c0 1.14-.85 2.1-1.98 2.2-.34.02-.68.05-1.02.07v3.09l-3-3c-1.35 0-2.7-.06-4.02-.17a2.1 2.1 0 0 1-.82-.24M20.25 8.51a2.1 2.1 0 0 0-.48-.1 48.6 48.6 0 0 0-8.05 0c-1.13.1-1.97 1.06-1.97 2.2v4.28c0 .84.46 1.58 1.15 1.95M20.25 8.51V6.64c0-1.62-1.15-3.03-2.76-3.24A48.5 48.5 0 0 0 11.25 3c-2.12 0-4.2.14-6.24.4-1.6.21-2.76 1.62-2.76 3.24v6.23c0 1.62 1.15 3.03 2.76 3.24.58.07 1.16.14 1.74.19V21l4.16-4.16"/></svg>
+        WhatsApp
       </a>
       <button id="v_imprimir" class="flex items-center justify-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-bold py-3 rounded-xl text-sm">
-        <span>🖨️</span> Imprimir
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
+        Imprimir
       </button>
     </div>
     <button class="no-print btnCerrarModal text-center text-xs text-gray-400 py-2" data-modal="modalVoucher">Cerrar</button>
@@ -634,7 +662,7 @@ document.getElementById('formConfig').addEventListener('submit', (e) => {
     document.getElementById('app').classList.remove('hidden');
     document.getElementById('proyectoActivo').textContent = config.projectId || '-';
     attachRealtimeListeners();
-    showToast('Conectado a Firebase correctamente ✅');
+    showToast('Conectado a Firebase correctamente');
   } catch (err) {
     console.error(err);
     document.getElementById('cfgError').classList.remove('hidden');
@@ -656,7 +684,6 @@ document.getElementById('btnParseJson').addEventListener('click', () => {
   }
 });
 
-document.getElementById('btnSettings').addEventListener('click', () => switchTab('ajustes'));
 document.getElementById('btnReconfigurar').addEventListener('click', () => {
   localStorage.removeItem(LS_KEY);
   location.reload();
@@ -684,6 +711,25 @@ function soloDigitos(str) {
 function estadoCuenta(pagadas, total) {
   return pagadas >= total ? 'Completado' : 'Al día';
 }
+
+// Formatea una fecha en texto "AAAA-MM-DD" (la que entrega <input type="date">) a "dd/mm/aaaa"
+function formatFechaCorta(str) {
+  if (!str) return '—';
+  const [y, m, d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+/* Iconos vectoriales (SVG) reutilizables para las tarjetas generadas por JS.
+   Se usan en vez de emojis para un acabado más limpio y consistente. */
+const ICON = {
+  pencil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m16.86 4.49 1.69-1.69a1.88 1.88 0 1 1 2.65 2.65L10.58 16.07a4.5 4.5 0 0 1-1.9 1.13L6 18l.8-2.69a4.5 4.5 0 0 1 1.13-1.89l8.93-8.93Zm0 0L19.5 7.13M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m14.74 9-.35 9m-4.78 0L9.26 9m9.97-3.21c.34.05.68.11 1.02.17M19.23 5.79 18.16 19.67a2.25 2.25 0 0 1-2.24 2.08H8.08a2.25 2.25 0 0 1-2.24-2.08L4.77 5.79m14.46 0a48 48 0 0 0-3.48-.4m-12 .56c.34-.06.68-.11 1.02-.16m0 0a48 48 0 0 1 3.48-.4m7.5 0v-.92c0-1.18-.91-2.16-2.09-2.2a52 52 0 0 0-3.32 0c-1.18.04-2.09 1.02-2.09 2.2v.92m7.5 0a48.7 48.7 0 0 0-7.5 0"/></svg>',
+  cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M2.25 18.75a60 60 0 0 1 15.8 2.1c.72.2 1.45-.34 1.45-1.1v-.99M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.38c0-.62.5-1.12 1.12-1.12H20.25M2.25 6v9m18-10.5v.75c0 .41.34.75.75.75h.75m-1.5-1.5h.38c.62 0 1.12.5 1.12 1.12v9.75c0 .62-.5 1.13-1.12 1.13h-.38m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.38a1.13 1.13 0 0 1-1.12-1.13V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M14.86 17.08a23.85 23.85 0 0 0 5.45-1.31A8.97 8.97 0 0 1 18 9.75V9a6 6 0 0 0-12 0v.75a8.97 8.97 0 0 1-2.31 6.02c1.73.64 3.56 1.09 5.45 1.31m5.72 0a24.26 24.26 0 0 1-5.72 0m5.72 0a3 3 0 1 1-5.72 0"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M2.25 6.75c0 8.28 6.72 15 15 15h1.5a2.25 2.25 0 0 0 2.25-2.25v-1.37c0-.52-.35-.97-.85-1.09l-4.42-1.11a1.12 1.12 0 0 0-1.18.42l-.96 1.29a1.12 1.12 0 0 1-1.21.38 12.03 12.03 0 0 1-7.14-7.14c-.16-.44 0-.93.38-1.21l1.29-.97a1.12 1.12 0 0 0 .42-1.17L6.96 3.1a1.13 1.13 0 0 0-1.09-.85H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>',
+  warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.82-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0L2.7 16.13ZM12 15.75h.007v.008H12v-.008Z"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0V11.25A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>',
+};
 
 let confirmCallback = null;
 function askConfirm(texto, onConfirm) {
@@ -771,6 +817,8 @@ function openGrupoModal(grupo=null) {
     document.getElementById('grupo_nombre').value = grupo.nombre || '';
     document.getElementById('grupo_monto').value = grupo.montoCuota || '';
     document.getElementById('grupo_quincenas').value = grupo.totalQuincenas || '';
+    document.getElementById('grupo_fechaInicio').value = grupo.fechaInicio || '';
+    document.getElementById('grupo_fechaCierre').value = grupo.fechaCierre || '';
   }
   openModal('modalGrupo');
 }
@@ -782,6 +830,9 @@ document.getElementById('formGrupo').addEventListener('submit', async (e) => {
     nombre: document.getElementById('grupo_nombre').value.trim(),
     montoCuota: parseFloat(document.getElementById('grupo_monto').value) || 0,
     totalQuincenas: parseInt(document.getElementById('grupo_quincenas').value) || 0,
+    // Se guardan como texto AAAA-MM-DD (tal cual entrega el <input type="date">)
+    fechaInicio: document.getElementById('grupo_fechaInicio').value,
+    fechaCierre: document.getElementById('grupo_fechaCierre').value,
     actualizado: firebase.firestore.FieldValue.serverTimestamp(),
   };
   try {
@@ -806,15 +857,16 @@ function renderGrupos() {
   cont.innerHTML = grupos.map(g => {
     const totalClientes = clientes.filter(c => c.grupoId === g.id).length;
     return `
-    <div class="bg-white rounded-2xl shadow-card p-4 flex items-center justify-between">
-      <div>
-        <p class="font-bold text-brand-900">${escapeHtml(g.nombre)}</p>
+    <div class="bg-white rounded-2xl shadow-card p-4 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-bold text-brand-900 truncate">${escapeHtml(g.nombre)}</p>
         <p class="text-xs text-gray-500 mt-0.5">${formatMoney(g.montoCuota)} / quincena &middot; ${g.totalQuincenas} quincenas</p>
+        <p class="flex items-center gap-1 text-[11px] text-gray-500 mt-1">${ICON.calendar} ${formatFechaCorta(g.fechaInicio)} — ${formatFechaCorta(g.fechaCierre)}</p>
         <p class="text-[11px] text-brand-600 font-semibold mt-1">${totalClientes} cliente(s)</p>
       </div>
-      <div class="flex gap-2">
-        <button class="btnEditGrupo w-9 h-9 rounded-xl bg-brand-50 text-brand-700" data-id="${g.id}">✏️</button>
-        <button class="btnDelGrupo w-9 h-9 rounded-xl bg-gray-100 text-gray-700" data-id="${g.id}">🗑️</button>
+      <div class="flex gap-2 shrink-0">
+        <button class="btnEditGrupo w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center" data-id="${g.id}">${ICON.pencil}</button>
+        <button class="btnDelGrupo w-9 h-9 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center" data-id="${g.id}">${ICON.trash}</button>
       </div>
     </div>`;
   }).join('');
@@ -978,10 +1030,10 @@ function renderClientes() {
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
             <p class="font-bold text-brand-900 truncate">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</p>
-            ${c.esMoroso ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black text-white shrink-0">⚠️ MOROSO</span>' : ''}
+            ${c.esMoroso ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black text-white shrink-0">${ICON.warning} MOROSO</span>` : ''}
           </div>
           <p class="text-xs text-gray-500">${escapeHtml(nombreGrupo(c.grupoId))} &middot; ${formatMoney(c.montoCuota)}/quincena</p>
-          <p class="text-xs text-gray-400 mt-0.5">📞 ${escapeHtml(c.telefono)}</p>
+          <p class="flex items-center gap-1 text-xs text-gray-400 mt-0.5">${ICON.phone} ${escapeHtml(c.telefono)}</p>
         </div>
         <div class="w-12 h-12 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 progress-ring" style="--pct:${pct}; --ring-color:${completado ? '#000000' : '#52525b'};">
           <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-brand-900">${pct}%</div>
@@ -993,12 +1045,12 @@ function renderClientes() {
         <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${completado ? 'bg-black text-white' : 'bg-brand-100 text-brand-700'}">${completado ? 'Completado' : 'Al día'}</span>
       </div>
 
-      <button class="btnPagar w-full mt-3 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-black hover:bg-neutral-800 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">💵 Registrar Pago</button>
+      <button class="btnPagar w-full mt-3 flex items-center justify-center gap-2 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-black hover:bg-neutral-800 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.cash} Registrar Pago</button>
 
       <div class="grid grid-cols-3 gap-2 mt-2">
-        <button class="btnRecordatorio bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🔔 Recordar</button>
-        <button class="btnEditCliente bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">✏️ Editar</button>
-        <button class="btnDelCliente bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🗑️ Borrar</button>
+        <button class="btnRecordatorio flex items-center justify-center gap-1 bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.bell} Recordar</button>
+        <button class="btnEditCliente flex items-center justify-center gap-1 bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.pencil} Editar</button>
+        <button class="btnDelCliente flex items-center justify-center gap-1 bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.trash} Borrar</button>
       </div>
     </div>`;
   }).join('');

@@ -375,7 +375,8 @@
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-600">Teléfono (WhatsApp, con código de país)</label>
-        <input required id="cliente_telefono" type="tel" placeholder="Ej. 521 55 1234 5678" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        <input required id="cliente_telefono" type="tel" placeholder="Ej. 58 414 1234567" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        <p id="cliente_telefonoPreview" class="text-[11px] text-gray-400 mt-1">Escribe: código de país + número, SIN el 0 inicial ni el +. Ej. Venezuela: 58 414 1234567 (no 0414-1234567).</p>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-600">Grupo asignado</label>
@@ -1013,6 +1014,7 @@ function openClienteModal(cliente=null) {
     document.getElementById('cliente_esMoroso').checked = false;
     document.getElementById('cliente_cuentaAntiguaWrap').classList.remove('hidden');
   }
+  actualizarPreviewTelefono();
   openModal('modalCliente');
 }
 
@@ -1020,6 +1022,28 @@ function openClienteModal(cliente=null) {
 document.getElementById('cliente_cuentaAntigua').addEventListener('change', (e) => {
   document.getElementById('cliente_fechaInicioWrap').classList.toggle('hidden', !e.target.checked);
 });
+
+// Vista previa en vivo del número tal como se usará para el link de WhatsApp,
+// con avisos de los errores más comunes (número con el 0 inicial local, muy
+// corto, etc.) para detectarlos al capturar el dato y no hasta enviar el link.
+function actualizarPreviewTelefono() {
+  const preview = document.getElementById('cliente_telefonoPreview');
+  const digits = soloDigitos(document.getElementById('cliente_telefono').value);
+  if (!digits) {
+    preview.textContent = 'Escribe: código de país + número, SIN el 0 inicial ni el +. Ej. Venezuela: 58 414 1234567 (no 0414-1234567).';
+    preview.className = 'text-[11px] text-gray-400 mt-1';
+    return;
+  }
+  let aviso = '';
+  if (digits.startsWith('0')) {
+    aviso = ' ⚠️ Empieza en 0: probablemente falta el código de país y sobra el 0 local (revisa el ejemplo de arriba).';
+  } else if (digits.length < 10) {
+    aviso = ' ⚠️ Parece muy corto para incluir código de país + número.';
+  }
+  preview.innerHTML = `Se usará para WhatsApp como: <strong>${digits}</strong>${aviso}`;
+  preview.className = 'text-[11px] mt-1 ' + (aviso ? 'text-red-600 font-semibold' : 'text-gray-400');
+}
+document.getElementById('cliente_telefono').addEventListener('input', actualizarPreviewTelefono);
 
 document.getElementById('formCliente').addEventListener('submit', async (e) => {
   e.preventDefault();

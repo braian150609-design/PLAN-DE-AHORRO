@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>Plan de Ahorro Caridad</title>
+
+<!-- ===================== TAILWIND CSS (CDN) ===================== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#f0fdf7', 100: '#dbfcec', 200: '#b8f7db', 300: '#84eebf',
+            400: '#4bdb9d', 500: '#22bd80', 600: '#159868', 700: '#137a55',
+            800: '#136147', 900: '#11503c', 950: '#062e20'
+          },
+          gold: { 400: '#f2c94c', 500: '#e0ab1f', 600: '#b9860f' }
+        },
+        boxShadow: { card: '0 4px 20px -4px rgba(6,46,32,0.12)' }
+      }
+    }
+  }
+</script>
+
+<!-- Fuente -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ===================== FIREBASE SDK (v9 compat) ===================== -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<style>
+  html, body { font-family: 'Inter', system-ui, sans-serif; background:#f4f7f5; }
+  .scrollbar-none::-webkit-scrollbar{ display:none; }
+  .scrollbar-none{ -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* Transición suave entre vistas */
+  .view-fade { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Barra de progreso circular simple con conic-gradient */
+  .progress-ring { background: conic-gradient(var(--ring-color, #22bd80) calc(var(--pct,0)*1%), #e5efe9 0); }
+
+  /* ============ ESTILOS DE IMPRESIÓN DEL VOUCHER ============ */
+  @media print {
+    body * { visibility: hidden !important; }
+    #printArea, #printArea * { visibility: visible !important; }
+    #printArea {
+      position: absolute; top: 0; left: 0; width: 100%;
+      padding: 0; margin: 0;
+    }
+    #printArea .no-print { display: none !important; }
+    @page { margin: 8mm; size: 80mm auto; }
+  }
+</style>
+</head>
+<body class="min-h-screen text-brand-950">
+
+<!-- =========================================================================
+     PANTALLA DE CONFIGURACIÓN INICIAL DE FIREBASE
+     Se muestra si no existe una configuración guardada en localStorage.
+========================================================================= -->
+<div id="configScreen" class="fixed inset-0 z-[100] bg-gradient-to-br from-brand-800 to-brand-950 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8 my-8">
+    <div class="flex flex-col items-center text-center mb-6">
+      <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center text-3xl shadow-card mb-3">🤝</div>
+      <h1 class="text-xl font-extrabold text-brand-900">Plan de Ahorro Caridad</h1>
+      <p class="text-sm text-gray-500 mt-1">Conecta la aplicación a tu proyecto de Firebase para comenzar a gestionar tus grupos, clientes y pagos.</p>
+    </div>
+
+    <form id="formConfig" class="space-y-3">
+      <div>
+        <label class="text-xs font-semibold text-gray-600">API Key</label>
+        <input required id="cfg_apiKey" type="text" placeholder="AIzaSy..." class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Auth Domain</label>
+        <input required id="cfg_authDomain" type="text" placeholder="tu-proyecto.firebaseapp.com" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Project ID</label>
+        <input required id="cfg_projectId" type="text" placeholder="tu-proyecto" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Storage Bucket</label>
+        <input id="cfg_storageBucket" type="text" placeholder="tu-proyecto.appspot.com" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Messaging Sender ID</label>
+          <input id="cfg_messagingSenderId" type="text" placeholder="123456789" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600">App ID</label>
+          <input required id="cfg_appId" type="text" placeholder="1:123:web:abc" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+      </div>
+
+      <details class="pt-1">
+        <summary class="text-xs text-brand-700 cursor-pointer select-none">¿Prefieres pegar el objeto firebaseConfig completo?</summary>
+        <textarea id="cfg_pasteJson" rows="4" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}' class="w-full mt-2 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-xs font-mono"></textarea>
+        <button type="button" id="btnParseJson" class="mt-2 text-xs font-semibold text-brand-700 underline">Autocompletar campos desde el JSON pegado</button>
+      </details>
+
+      <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 active:scale-[.98] transition text-white font-bold py-3 rounded-xl shadow-card">
+        Guardar y Conectar
+      </button>
+      <p id="cfgError" class="text-xs text-red-500 text-center hidden">No se pudo conectar. Verifica tus credenciales.</p>
+      <p class="text-[11px] text-gray-400 text-center pt-1">Tus credenciales se guardan solo en este dispositivo (localStorage).</p>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     APLICACIÓN PRINCIPAL
+========================================================================= -->
+<div id="app" class="hidden max-w-lg mx-auto min-h-screen flex flex-col pb-24">
+
+  <!-- ---------- HEADER ---------- -->
+  <header class="sticky top-0 z-30 bg-gradient-to-r from-brand-700 to-brand-600 text-white px-4 pt-5 pb-6 rounded-b-3xl shadow-card">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl">🤝</div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-tight">Plan de Ahorro Caridad</h1>
+          <p class="text-[11px] text-brand-100">Cobros: día 15 y último de mes</p>
+        </div>
+      </div>
+      <button id="btnSettings" class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-lg" title="Ajustes de Firebase">⚙️</button>
+    </div>
+
+    <!-- Resumen rápido -->
+    <div class="grid grid-cols-3 gap-2 mt-4">
+      <div class="bg-white/10 rounded-2xl p-2.5 text-center">
+        <p class="text-lg font-extrabold" id="statGrupos">0</p>
+        <p class="text-[10px] text-brand-100 uppercase tracking-wide">Grupos</p>
+      </div>
+      <div class="bg-white/10 rounded-2xl p-2.5 text-center">
+        <p class="text-lg font-extrabold" id="statClientes">0</p>
+        <p class="text-[10px] text-brand-100 uppercase tracking-wide">Clientes</p>
+      </div>
+      <div class="bg-white/10 rounded-2xl p-2.5 text-center">
+        <p class="text-lg font-extrabold" id="statAlDia">0</p>
+        <p class="text-[10px] text-brand-100 uppercase tracking-wide">Al día</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 px-4 mt-4">
+
+    <!-- ==================== VISTA: CLIENTES ==================== -->
+    <section id="view-clientes" class="view-fade space-y-3">
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <input id="buscarCliente" type="text" placeholder="Buscar cliente por nombre..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔎</span>
+        </div>
+        <select id="filtroGrupoClientes" class="px-2 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm text-sm max-w-[110px]">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div id="listaClientes" class="space-y-3"></div>
+      <p id="emptyClientes" class="hidden text-center text-sm text-gray-400 py-10">Aún no hay clientes registrados.<br>Toca el botón + para agregar el primero.</p>
+    </section>
+
+    <!-- ==================== VISTA: GRUPOS ==================== -->
+    <section id="view-grupos" class="view-fade space-y-3 hidden"></section>
+
+    <!-- ==================== VISTA: AJUSTES ==================== -->
+    <section id="view-ajustes" class="view-fade space-y-4 hidden">
+      <div class="bg-white rounded-2xl shadow-card p-4">
+        <h3 class="font-bold text-brand-900 mb-1">Conexión a Firebase</h3>
+        <p class="text-xs text-gray-500 mb-3">Proyecto conectado: <span id="proyectoActivo" class="font-semibold text-brand-700">-</span></p>
+        <button id="btnReconfigurar" class="w-full py-2.5 rounded-xl border border-brand-600 text-brand-700 font-semibold text-sm hover:bg-brand-50">Cambiar credenciales de Firebase</button>
+      </div>
+      <div class="bg-white rounded-2xl shadow-card p-4">
+        <h3 class="font-bold text-brand-900 mb-1">Acerca de</h3>
+        <p class="text-xs text-gray-500 leading-relaxed">Plan de Ahorro Caridad — Sistema de gestión de financiamiento a premio (tandas) con cobros quincenales, voucher digital y envío por WhatsApp.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ---------- BOTÓN FLOTANTE DE AGREGAR ---------- -->
+  <button id="btnFab" class="fixed z-40 bottom-24 right-1/2 translate-x-[9.5rem] sm:translate-x-40 w-14 h-14 rounded-full bg-gold-500 hover:bg-gold-600 text-white text-2xl font-bold shadow-xl flex items-center justify-center active:scale-95 transition">+</button>
+
+  <!-- ---------- NAV INFERIOR (MOBILE FIRST) ---------- -->
+  <nav class="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <div class="max-w-lg mx-auto grid grid-cols-3 text-center">
+      <button data-tab="clientes" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-brand-700">
+        <span class="text-lg">👥</span><span class="text-[11px] font-semibold">Clientes</span>
+      </button>
+      <button data-tab="grupos" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-gray-400">
+        <span class="text-lg">🗂️</span><span class="text-[11px] font-semibold">Grupos</span>
+      </button>
+      <button data-tab="ajustes" class="tab-btn py-3 flex flex-col items-center gap-0.5 text-gray-400">
+        <span class="text-lg">⚙️</span><span class="text-[11px] font-semibold">Ajustes</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- =========================================================================
+     MODAL: CREAR / EDITAR GRUPO
+========================================================================= -->
+<div id="modalGrupo" class="fixed inset-0 z-[90] hidden bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto scrollbar-none">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="tituloModalGrupo" class="font-extrabold text-lg text-brand-900">Nuevo Grupo</h3>
+      <button class="btnCerrarModal text-gray-400 text-2xl leading-none" data-modal="modalGrupo">&times;</button>
+    </div>
+    <form id="formGrupo" class="space-y-3">
+      <input type="hidden" id="grupo_id">
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Nombre del grupo</label>
+        <input required id="grupo_nombre" type="text" placeholder="Ej. Grupo A - 10 personas" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Monto por cuota quincenal</label>
+          <input required id="grupo_monto" type="number" min="0" step="0.01" placeholder="500" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Total de quincenas</label>
+          <input required id="grupo_quincenas" type="number" min="1" step="1" placeholder="20" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+      </div>
+      <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-card">Guardar Grupo</button>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: CREAR / EDITAR CLIENTE
+========================================================================= -->
+<div id="modalCliente" class="fixed inset-0 z-[90] hidden bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto scrollbar-none">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="tituloModalCliente" class="font-extrabold text-lg text-brand-900">Nuevo Cliente</h3>
+      <button class="btnCerrarModal text-gray-400 text-2xl leading-none" data-modal="modalCliente">&times;</button>
+    </div>
+    <form id="formCliente" class="space-y-3">
+      <input type="hidden" id="cliente_id">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Nombre</label>
+          <input required id="cliente_nombre" type="text" placeholder="María" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Apellido</label>
+          <input required id="cliente_apellido" type="text" placeholder="Gómez" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Teléfono (WhatsApp, con código de país)</label>
+        <input required id="cliente_telefono" type="tel" placeholder="Ej. 521 55 1234 5678" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Grupo asignado</label>
+        <select required id="cliente_grupo" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+          <option value="">Selecciona un grupo...</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Monto por cuota</label>
+          <input required id="cliente_monto" type="number" min="0" step="0.01" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600">Total de quincenas</label>
+          <input required id="cliente_totalQuincenas" type="number" min="1" step="1" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600">Quincenas ya pagadas (al registrar)</label>
+        <input required id="cliente_quincenasPagadas" type="number" min="0" step="1" value="0" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+      <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-card">Guardar Cliente</button>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: REGISTRAR PAGO
+========================================================================= -->
+<div id="modalPago" class="fixed inset-0 z-[90] hidden bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5">
+    <div class="flex items-center justify-between mb-1">
+      <h3 class="font-extrabold text-lg text-brand-900">Registrar Pago</h3>
+      <button class="btnCerrarModal text-gray-400 text-2xl leading-none" data-modal="modalPago">&times;</button>
+    </div>
+    <p id="pago_clienteNombre" class="text-sm text-gray-500 mb-4 font-medium"></p>
+
+    <form id="formPago" class="space-y-4">
+      <input type="hidden" id="pago_clienteId">
+      <div class="bg-brand-50 rounded-2xl p-3 grid grid-cols-2 gap-2 text-center">
+        <div>
+          <p class="text-xs text-gray-500">Quincenas pagadas</p>
+          <p id="pago_pagadasActual" class="font-extrabold text-brand-800">0/0</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Restantes</p>
+          <p id="pago_restantesActual" class="font-extrabold text-brand-800">0</p>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-semibold text-gray-600">¿Cuántas cuotas está pagando ahora?</label>
+        <div class="flex items-center gap-3 mt-1">
+          <button type="button" id="pago_menos" class="w-10 h-10 rounded-xl bg-gray-100 font-bold text-lg">−</button>
+          <input required id="pago_cuotas" type="number" min="1" value="1" class="flex-1 text-center px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-lg font-bold">
+          <button type="button" id="pago_mas" class="w-10 h-10 rounded-xl bg-gray-100 font-bold text-lg">+</button>
+        </div>
+        <p class="text-[11px] text-gray-400 mt-1">Puedes registrar 1 o varias quincenas adelantadas de una vez.</p>
+      </div>
+
+      <div class="flex items-center justify-between bg-gold-50 border border-gold-400/40 rounded-2xl p-3">
+        <span class="text-sm font-semibold text-brand-900">Monto total a pagar</span>
+        <span id="pago_montoTotal" class="text-xl font-extrabold text-brand-800">$0.00</span>
+      </div>
+
+      <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-card">Confirmar Pago y Generar Voucher</button>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: VOUCHER DIGITAL DE PAGO (imprimible)
+========================================================================= -->
+<div id="modalVoucher" class="fixed inset-0 z-[95] hidden bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92vh] flex flex-col">
+
+    <div id="printArea" class="p-6 overflow-y-auto scrollbar-none">
+      <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
+        <div class="text-3xl mb-1">🤝</div>
+        <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
+        <p class="text-xs text-gray-500">Comprobante de Pago</p>
+      </div>
+
+      <div class="space-y-1.5 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Cliente:</span><span id="v_cliente" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Grupo:</span><span id="v_grupo" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Fecha:</span><span id="v_fecha" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Hora:</span><span id="v_hora" class="font-semibold text-right">-</span></div>
+      </div>
+
+      <div class="border-t border-dashed border-gray-300 my-3"></div>
+
+      <div class="space-y-1.5 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Cuotas abonadas ahora:</span><span id="v_cuotas" class="font-semibold">-</span></div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500">Monto pagado:</span>
+          <span id="v_monto" class="font-extrabold text-brand-800 text-lg">-</span>
+        </div>
+      </div>
+
+      <div class="border-t border-dashed border-gray-300 my-3"></div>
+
+      <div class="space-y-1.5 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Quincenas acumuladas:</span><span id="v_acumuladas" class="font-semibold">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Quincenas restantes:</span><span id="v_restantes" class="font-semibold">-</span></div>
+      </div>
+
+      <div class="mt-4 text-center">
+        <span id="v_estado" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold">-</span>
+      </div>
+
+      <p class="text-center text-[11px] text-gray-400 mt-5">¡Gracias por su puntualidad y confianza!</p>
+    </div>
+
+    <div class="no-print p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
+      <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm">
+        <span>📱</span> WhatsApp
+      </a>
+      <button id="v_imprimir" class="flex items-center justify-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-bold py-3 rounded-xl text-sm">
+        <span>🖨️</span> Imprimir
+      </button>
+    </div>
+    <button class="no-print btnCerrarModal text-center text-xs text-gray-400 py-2" data-modal="modalVoucher">Cerrar</button>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL DE CONFIRMACIÓN (eliminar)
+========================================================================= -->
+<div id="modalConfirm" class="fixed inset-0 z-[95] hidden bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-xs rounded-3xl p-5 text-center">
+    <p id="confirmTexto" class="text-sm text-gray-700 mb-5">¿Confirmas esta acción?</p>
+    <div class="grid grid-cols-2 gap-3">
+      <button id="confirmCancelar" class="py-2.5 rounded-xl bg-gray-100 font-semibold text-sm">Cancelar</button>
+      <button id="confirmAceptar" class="py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de notificaciones -->
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 z-[100] hidden bg-brand-950 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-xl"></div>
+
+<script>
+/* =========================================================================
+   PLAN DE AHORRO CARIDAD — LÓGICA DE LA APLICACIÓN
+   ========================================================================= */
+
+/* ---------- 1. CONFIGURACIÓN Y CONEXIÓN A FIREBASE ---------- */
+
+// Espacio para credenciales por defecto (opcional). Puede dejarse vacío;
+// la app pedirá los datos en la pantalla de configuración si no hay nada guardado.
+const FIREBASE_CONFIG_PLACEHOLDER = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+
+const LS_KEY = 'planAhorroCaridad_firebaseConfig';
+let db = null;
+
+function getSavedConfig() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function initFirebaseApp(config) {
+  try {
+    if (firebase.apps.length) {
+      firebase.app().delete().catch(()=>{}).finally(() => {});
+    }
+  } catch(e) {}
+  firebase.initializeApp(config);
+  db = firebase.firestore();
+}
+
+function boot() {
+  const saved = getSavedConfig();
+  const cfg = saved || (FIREBASE_CONFIG_PLACEHOLDER.apiKey ? FIREBASE_CONFIG_PLACEHOLDER : null);
+  if (cfg) {
+    try {
+      initFirebaseApp(cfg);
+      document.getElementById('configScreen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('proyectoActivo').textContent = cfg.projectId || '-';
+      attachRealtimeListeners();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('configScreen').classList.remove('hidden');
+    }
+  } else {
+    document.getElementById('configScreen').classList.remove('hidden');
+  }
+}
+
+document.getElementById('formConfig').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const config = {
+    apiKey: document.getElementById('cfg_apiKey').value.trim(),
+    authDomain: document.getElementById('cfg_authDomain').value.trim(),
+    projectId: document.getElementById('cfg_projectId').value.trim(),
+    storageBucket: document.getElementById('cfg_storageBucket').value.trim(),
+    messagingSenderId: document.getElementById('cfg_messagingSenderId').value.trim(),
+    appId: document.getElementById('cfg_appId').value.trim(),
+  };
+  try {
+    initFirebaseApp(config);
+    localStorage.setItem(LS_KEY, JSON.stringify(config));
+    document.getElementById('cfgError').classList.add('hidden');
+    document.getElementById('configScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('proyectoActivo').textContent = config.projectId || '-';
+    attachRealtimeListeners();
+    showToast('Conectado a Firebase correctamente ✅');
+  } catch (err) {
+    console.error(err);
+    document.getElementById('cfgError').classList.remove('hidden');
+  }
+});
+
+document.getElementById('btnParseJson').addEventListener('click', () => {
+  try {
+    const obj = JSON.parse(document.getElementById('cfg_pasteJson').value);
+    document.getElementById('cfg_apiKey').value = obj.apiKey || '';
+    document.getElementById('cfg_authDomain').value = obj.authDomain || '';
+    document.getElementById('cfg_projectId').value = obj.projectId || '';
+    document.getElementById('cfg_storageBucket').value = obj.storageBucket || '';
+    document.getElementById('cfg_messagingSenderId').value = obj.messagingSenderId || '';
+    document.getElementById('cfg_appId').value = obj.appId || '';
+    showToast('Campos autocompletados');
+  } catch (e) {
+    showToast('JSON inválido');
+  }
+});
+
+document.getElementById('btnSettings').addEventListener('click', () => switchTab('ajustes'));
+document.getElementById('btnReconfigurar').addEventListener('click', () => {
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+});
+
+/* ---------- 2. UTILIDADES GENERALES ---------- */
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.add('hidden'), 2600);
+}
+
+function formatMoney(n) {
+  const num = Number(n) || 0;
+  return '$' + num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function soloDigitos(str) {
+  return (str || '').replace(/\D/g, '');
+}
+
+function estadoCuenta(pagadas, total) {
+  return pagadas >= total ? 'Completado' : 'Al día';
+}
+
+let confirmCallback = null;
+function askConfirm(texto, onConfirm) {
+  document.getElementById('confirmTexto').textContent = texto;
+  confirmCallback = onConfirm;
+  document.getElementById('modalConfirm').classList.remove('hidden');
+}
+document.getElementById('confirmCancelar').addEventListener('click', () => {
+  document.getElementById('modalConfirm').classList.add('hidden');
+  confirmCallback = null;
+});
+document.getElementById('confirmAceptar').addEventListener('click', () => {
+  document.getElementById('modalConfirm').classList.add('hidden');
+  if (confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
+
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.btnCerrarModal').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.modal));
+});
+
+/* ---------- 3. NAVEGACIÓN POR PESTAÑAS ---------- */
+
+function switchTab(tab) {
+  ['clientes', 'grupos', 'ajustes'].forEach(t => {
+    document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('text-brand-700', b.dataset.tab === tab);
+    b.classList.toggle('text-gray-400', b.dataset.tab !== tab);
+  });
+  document.getElementById('btnFab').classList.toggle('hidden', tab === 'ajustes');
+  currentTab = tab;
+}
+let currentTab = 'clientes';
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+document.getElementById('btnFab').addEventListener('click', () => {
+  if (currentTab === 'grupos') {
+    openGrupoModal();
+  } else {
+    openClienteModal();
+  }
+});
+
+/* ---------- 4. ESTADO EN MEMORIA (sincronizado con Firestore) ---------- */
+
+let grupos = [];   // { id, nombre, montoCuota, totalQuincenas }
+let clientes = [];  // { id, nombre, apellido, telefono, grupoId, montoCuota, totalQuincenas, quincenasPagadas }
+
+function attachRealtimeListeners() {
+  // Escucha en tiempo real la colección de grupos
+  db.collection('grupos').orderBy('nombre').onSnapshot(snap => {
+    grupos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGrupos();
+    renderGrupoSelects();
+    renderClientes();
+    renderStats();
+  }, err => showToast('Error leyendo grupos: ' + err.message));
+
+  // Escucha en tiempo real la colección de clientes
+  db.collection('clientes').orderBy('nombre').onSnapshot(snap => {
+    clientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderClientes();
+    renderGrupos();
+    renderStats();
+  }, err => showToast('Error leyendo clientes: ' + err.message));
+}
+
+function renderStats() {
+  document.getElementById('statGrupos').textContent = grupos.length;
+  document.getElementById('statClientes').textContent = clientes.length;
+  document.getElementById('statAlDia').textContent = clientes.filter(c => (c.quincenasPagadas||0) < (c.totalQuincenas||0)).length;
+}
+
+/* ---------- 5. MÓDULO DE GRUPOS ---------- */
+
+function openGrupoModal(grupo=null) {
+  document.getElementById('formGrupo').reset();
+  document.getElementById('grupo_id').value = grupo ? grupo.id : '';
+  document.getElementById('tituloModalGrupo').textContent = grupo ? 'Editar Grupo' : 'Nuevo Grupo';
+  if (grupo) {
+    document.getElementById('grupo_nombre').value = grupo.nombre || '';
+    document.getElementById('grupo_monto').value = grupo.montoCuota || '';
+    document.getElementById('grupo_quincenas').value = grupo.totalQuincenas || '';
+  }
+  openModal('modalGrupo');
+}
+
+document.getElementById('formGrupo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('grupo_id').value;
+  const data = {
+    nombre: document.getElementById('grupo_nombre').value.trim(),
+    montoCuota: parseFloat(document.getElementById('grupo_monto').value) || 0,
+    totalQuincenas: parseInt(document.getElementById('grupo_quincenas').value) || 0,
+    actualizado: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  try {
+    if (id) {
+      await db.collection('grupos').doc(id).update(data);
+      showToast('Grupo actualizado');
+    } else {
+      data.creado = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('grupos').add(data);
+      showToast('Grupo creado');
+    }
+    closeModal('modalGrupo');
+  } catch (err) { showToast('Error: ' + err.message); }
+});
+
+function renderGrupos() {
+  const cont = document.getElementById('view-grupos');
+  if (!grupos.length) {
+    cont.innerHTML = `<p class="text-center text-sm text-gray-400 py-10">Aún no hay grupos.<br>Toca el botón + para crear el primero.</p>`;
+    return;
+  }
+  cont.innerHTML = grupos.map(g => {
+    const totalClientes = clientes.filter(c => c.grupoId === g.id).length;
+    return `
+    <div class="bg-white rounded-2xl shadow-card p-4 flex items-center justify-between">
+      <div>
+        <p class="font-bold text-brand-900">${escapeHtml(g.nombre)}</p>
+        <p class="text-xs text-gray-500 mt-0.5">${formatMoney(g.montoCuota)} / quincena &middot; ${g.totalQuincenas} quincenas</p>
+        <p class="text-[11px] text-brand-600 font-semibold mt-1">${totalClientes} cliente(s)</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="btnEditGrupo w-9 h-9 rounded-xl bg-brand-50 text-brand-700" data-id="${g.id}">✏️</button>
+        <button class="btnDelGrupo w-9 h-9 rounded-xl bg-red-50 text-red-500" data-id="${g.id}">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.querySelectorAll('.btnEditGrupo').forEach(b => b.addEventListener('click', () => {
+    openGrupoModal(grupos.find(g => g.id === b.dataset.id));
+  }));
+  cont.querySelectorAll('.btnDelGrupo').forEach(b => b.addEventListener('click', () => {
+    const grupo = grupos.find(g => g.id === b.dataset.id);
+    const enUso = clientes.some(c => c.grupoId === grupo.id);
+    if (enUso) { showToast('No se puede eliminar: tiene clientes asignados'); return; }
+    askConfirm(`¿Eliminar el grupo "${grupo.nombre}"?`, async () => {
+      await db.collection('grupos').doc(grupo.id).delete();
+      showToast('Grupo eliminado');
+    });
+  }));
+}
+
+function renderGrupoSelects() {
+  const options = '<option value="">Selecciona un grupo...</option>' +
+    grupos.map(g => `<option value="${g.id}">${escapeHtml(g.nombre)}</option>`).join('');
+  document.getElementById('cliente_grupo').innerHTML = options;
+  document.getElementById('filtroGrupoClientes').innerHTML =
+    '<option value="">Todos</option>' + grupos.map(g => `<option value="${g.id}">${escapeHtml(g.nombre)}</option>`).join('');
+}
+
+// Autocompletar monto/quincenas del cliente al elegir grupo
+document.getElementById('cliente_grupo').addEventListener('change', (e) => {
+  const g = grupos.find(x => x.id === e.target.value);
+  if (g) {
+    document.getElementById('cliente_monto').value = g.montoCuota;
+    document.getElementById('cliente_totalQuincenas').value = g.totalQuincenas;
+  }
+});
+
+/* ---------- 6. MÓDULO DE CLIENTES ---------- */
+
+function openClienteModal(cliente=null) {
+  document.getElementById('formCliente').reset();
+  document.getElementById('cliente_id').value = cliente ? cliente.id : '';
+  document.getElementById('tituloModalCliente').textContent = cliente ? 'Editar Cliente' : 'Nuevo Cliente';
+  if (cliente) {
+    document.getElementById('cliente_nombre').value = cliente.nombre || '';
+    document.getElementById('cliente_apellido').value = cliente.apellido || '';
+    document.getElementById('cliente_telefono').value = cliente.telefono || '';
+    document.getElementById('cliente_grupo').value = cliente.grupoId || '';
+    document.getElementById('cliente_monto').value = cliente.montoCuota || '';
+    document.getElementById('cliente_totalQuincenas').value = cliente.totalQuincenas || '';
+    document.getElementById('cliente_quincenasPagadas').value = cliente.quincenasPagadas || 0;
+  } else {
+    document.getElementById('cliente_quincenasPagadas').value = 0;
+  }
+  openModal('modalCliente');
+}
+
+document.getElementById('formCliente').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('cliente_id').value;
+  const data = {
+    nombre: document.getElementById('cliente_nombre').value.trim(),
+    apellido: document.getElementById('cliente_apellido').value.trim(),
+    telefono: soloDigitos(document.getElementById('cliente_telefono').value),
+    grupoId: document.getElementById('cliente_grupo').value,
+    montoCuota: parseFloat(document.getElementById('cliente_monto').value) || 0,
+    totalQuincenas: parseInt(document.getElementById('cliente_totalQuincenas').value) || 0,
+    quincenasPagadas: parseInt(document.getElementById('cliente_quincenasPagadas').value) || 0,
+    actualizado: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  try {
+    if (id) {
+      await db.collection('clientes').doc(id).update(data);
+      showToast('Cliente actualizado');
+    } else {
+      data.creado = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection('clientes').add(data);
+      showToast('Cliente registrado');
+    }
+    closeModal('modalCliente');
+  } catch (err) { showToast('Error: ' + err.message); }
+});
+
+function nombreGrupo(id) {
+  const g = grupos.find(x => x.id === id);
+  return g ? g.nombre : 'Sin grupo';
+}
+
+function renderClientes() {
+  const cont = document.getElementById('listaClientes');
+  const empty = document.getElementById('emptyClientes');
+  const busqueda = document.getElementById('buscarCliente').value.trim().toLowerCase();
+  const filtroGrupo = document.getElementById('filtroGrupoClientes').value;
+
+  let lista = clientes.filter(c => {
+    const nombreCompleto = `${c.nombre} ${c.apellido}`.toLowerCase();
+    const pasaBusqueda = !busqueda || nombreCompleto.includes(busqueda);
+    const pasaGrupo = !filtroGrupo || c.grupoId === filtroGrupo;
+    return pasaBusqueda && pasaGrupo;
+  });
+
+  if (!lista.length) {
+    cont.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  cont.innerHTML = lista.map(c => {
+    const total = c.totalQuincenas || 0;
+    const pagadas = c.quincenasPagadas || 0;
+    const restantes = Math.max(total - pagadas, 0);
+    const pct = total ? Math.min(Math.round((pagadas/total)*100), 100) : 0;
+    const completado = pagadas >= total && total > 0;
+    return `
+    <div class="bg-white rounded-2xl shadow-card p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-brand-900 truncate">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</p>
+          <p class="text-xs text-gray-500">${escapeHtml(nombreGrupo(c.grupoId))} &middot; ${formatMoney(c.montoCuota)}/quincena</p>
+          <p class="text-xs text-gray-400 mt-0.5">📞 ${escapeHtml(c.telefono)}</p>
+        </div>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 progress-ring" style="--pct:${pct}; --ring-color:${completado ? '#e0ab1f' : '#22bd80'};">
+          <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-brand-900">${pct}%</div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mt-3 text-xs">
+        <span class="font-semibold text-gray-600">${pagadas}/${total} quincenas &middot; ${restantes} restantes</span>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${completado ? 'bg-gold-500/20 text-gold-600' : 'bg-brand-100 text-brand-700'}">${completado ? 'Completado' : 'Al día'}</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        <button class="btnPagar col-span-1 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">💵 Pagar</button>
+        <button class="btnEditCliente bg-gray-100 text-gray-600 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">✏️ Editar</button>
+        <button class="btnDelCliente bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🗑️ Borrar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.querySelectorAll('.btnEditCliente').forEach(b => b.addEventListener('click', () => {
+    openClienteModal(clientes.find(c => c.id === b.dataset.id));
+  }));
+  cont.querySelectorAll('.btnDelCliente').forEach(b => b.addEventListener('click', () => {
+    const c = clientes.find(x => x.id === b.dataset.id);
+    askConfirm(`¿Eliminar a ${c.nombre} ${c.apellido}? Esta acción no se puede deshacer.`, async () => {
+      await db.collection('clientes').doc(c.id).delete();
+      showToast('Cliente eliminado');
+    });
+  }));
+  cont.querySelectorAll('.btnPagar').forEach(b => b.addEventListener('click', () => {
+    openPagoModal(clientes.find(c => c.id === b.dataset.id));
+  }));
+}
+
+document.getElementById('buscarCliente').addEventListener('input', renderClientes);
+document.getElementById('filtroGrupoClientes').addEventListener('change', renderClientes);
+
+/* ---------- 7. MÓDULO DE PAGOS FLEXIBLES (15 y último) ---------- */
+
+let clienteEnPago = null;
+
+function openPagoModal(cliente) {
+  clienteEnPago = cliente;
+  const total = cliente.totalQuincenas || 0;
+  const pagadas = cliente.quincenasPagadas || 0;
+  const restantes = Math.max(total - pagadas, 0);
+
+  document.getElementById('pago_clienteId').value = cliente.id;
+  document.getElementById('pago_clienteNombre').textContent = `${cliente.nombre} ${cliente.apellido} — ${nombreGrupo(cliente.grupoId)}`;
+  document.getElementById('pago_pagadasActual').textContent = `${pagadas}/${total}`;
+  document.getElementById('pago_restantesActual').textContent = restantes;
+  document.getElementById('pago_cuotas').value = 1;
+  document.getElementById('pago_cuotas').max = restantes;
+  actualizarMontoPago();
+  openModal('modalPago');
+}
+
+function actualizarMontoPago() {
+  const cuotas = parseInt(document.getElementById('pago_cuotas').value) || 0;
+  const monto = cuotas * (clienteEnPago ? clienteEnPago.montoCuota : 0);
+  document.getElementById('pago_montoTotal').textContent = formatMoney(monto);
+}
+document.getElementById('pago_cuotas').addEventListener('input', actualizarMontoPago);
+document.getElementById('pago_mas').addEventListener('click', () => {
+  const input = document.getElementById('pago_cuotas');
+  const max = parseInt(input.max) || 999;
+  input.value = Math.min((parseInt(input.value)||0) + 1, max);
+  actualizarMontoPago();
+});
+document.getElementById('pago_menos').addEventListener('click', () => {
+  const input = document.getElementById('pago_cuotas');
+  input.value = Math.max((parseInt(input.value)||0) - 1, 1);
+  actualizarMontoPago();
+});
+
+document.getElementById('formPago').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const cuotas = parseInt(document.getElementById('pago_cuotas').value) || 0;
+  if (cuotas < 1) { showToast('Ingresa una cantidad válida de cuotas'); return; }
+
+  const cliente = clienteEnPago;
+  const total = cliente.totalQuincenas || 0;
+  const pagadasPrevias = cliente.quincenasPagadas || 0;
+  const nuevasPagadas = Math.min(pagadasPrevias + cuotas, total);
+  const montoPago = cuotas * (cliente.montoCuota || 0);
+  const ahora = new Date();
+
+  try {
+    // Actualiza el acumulado del cliente en Firestore
+    await db.collection('clientes').doc(cliente.id).update({
+      quincenasPagadas: nuevasPagadas,
+      actualizado: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Guarda un registro histórico del pago (subcolección)
+    await db.collection('clientes').doc(cliente.id).collection('pagos').add({
+      cuotasPagadas: cuotas,
+      monto: montoPago,
+      quincenasAcumuladasDespues: nuevasPagadas,
+      fecha: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    closeModal('modalPago');
+
+    // Genera y muestra el voucher digital con los datos de esta transacción
+    mostrarVoucher({
+      cliente, cuotas, monto: montoPago,
+      pagadas: nuevasPagadas, restantes: Math.max(total - nuevasPagadas, 0),
+      total, fecha: ahora,
+    });
+  } catch (err) {
+    showToast('Error al registrar pago: ' + err.message);
+  }
+});
+
+/* ---------- 8. VOUCHER DIGITAL + WHATSAPP + IMPRESIÓN ---------- */
+
+function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fecha }) {
+  const fechaStr = fecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+  const horaStr = fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  const estado = estadoCuenta(pagadas, total);
+  const grupoNombre = nombreGrupo(cliente.grupoId);
+
+  document.getElementById('v_cliente').textContent = `${cliente.nombre} ${cliente.apellido}`;
+  document.getElementById('v_grupo').textContent = grupoNombre;
+  document.getElementById('v_fecha').textContent = fechaStr;
+  document.getElementById('v_hora').textContent = horaStr;
+  document.getElementById('v_cuotas').textContent = cuotas;
+  document.getElementById('v_monto').textContent = formatMoney(monto);
+  document.getElementById('v_acumuladas').textContent = `${pagadas}/${total}`;
+  document.getElementById('v_restantes').textContent = restantes;
+
+  const estadoEl = document.getElementById('v_estado');
+  estadoEl.textContent = estado;
+  estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
+    (estado === 'Completado' ? 'bg-gold-500/20 text-gold-600' : 'bg-brand-100 text-brand-700');
+
+  // Construye el mensaje formateado para WhatsApp
+  const mensaje =
+`*Plan de Ahorro Caridad* 🤝
+Comprobante de Pago
+
+Cliente: ${cliente.nombre} ${cliente.apellido}
+Grupo: ${grupoNombre}
+Fecha: ${fechaStr} - ${horaStr}
+
+Cuotas abonadas ahora: ${cuotas}
+Monto pagado: ${formatMoney(monto)}
+
+Quincenas acumuladas: ${pagadas}/${total}
+Quincenas restantes: ${restantes}
+Estado de cuenta: *${estado}*
+
+¡Gracias por su pago puntual! 🙏`;
+
+  const telefono = soloDigitos(cliente.telefono);
+  document.getElementById('v_whatsapp').href = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+
+  openModal('modalVoucher');
+}
+
+document.getElementById('v_imprimir').addEventListener('click', () => window.print());
+
+/* ---------- 9. UTILIDAD DE ESCAPE HTML (seguridad básica al renderizar) ---------- */
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[m]));
+}
+
+/* ---------- 10. INICIO DE LA APLICACIÓN ---------- */
+boot();
+</script>
+</body>
+</html>

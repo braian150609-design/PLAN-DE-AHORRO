@@ -4,6 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<!-- Evita que el navegador guarde en caché una copia vieja de la app o de un voucher -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Plan de Ahorro Caridad</title>
 
 <!-- ===================== TAILWIND CSS (CDN) ===================== -->
@@ -1303,7 +1307,10 @@ document.getElementById('view-clientes').addEventListener('click', (e) => {
 // (sin menú, sin listas de otros clientes, sin posibilidad de editar nada).
 function urlVoucherPublico(clienteId) {
   const base = location.origin + location.pathname;
-  return `${base}?ver=${clienteId}`;
+  // El "&t=" con la hora actual evita que el teléfono/navegador reutilice una
+  // copia vieja guardada en caché para ese mismo cliente (cada link generado
+  // es "nuevo" para efectos de caché, aunque el ?ver= sea el mismo cliente).
+  return `${base}?ver=${clienteId}&t=${Date.now()}`;
 }
 
 // WhatsApp (sobre todo en iPhone) falla al abrir un link "api.whatsapp.com/send"

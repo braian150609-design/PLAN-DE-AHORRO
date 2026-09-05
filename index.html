@@ -13,14 +13,15 @@
       extend: {
         fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
         colors: {
+          /* Paleta en escala de grises — interfaz 100% blanco y negro */
           brand: {
-            50: '#f0fdf7', 100: '#dbfcec', 200: '#b8f7db', 300: '#84eebf',
-            400: '#4bdb9d', 500: '#22bd80', 600: '#159868', 700: '#137a55',
-            800: '#136147', 900: '#11503c', 950: '#062e20'
+            50: '#fafafa', 100: '#f4f4f5', 200: '#e4e4e7', 300: '#d4d4d8',
+            400: '#a1a1aa', 500: '#71717a', 600: '#52525b', 700: '#3f3f46',
+            800: '#27272a', 900: '#18181b', 950: '#09090b'
           },
-          gold: { 400: '#f2c94c', 500: '#e0ab1f', 600: '#b9860f' }
+          gold: { 50: '#f4f4f5', 400: '#d4d4d8', 500: '#000000', 600: '#000000' }
         },
-        boxShadow: { card: '0 4px 20px -4px rgba(6,46,32,0.12)' }
+        boxShadow: { card: '0 4px 20px -4px rgba(0,0,0,0.15)' }
       }
     }
   }
@@ -35,7 +36,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
 <style>
-  html, body { font-family: 'Inter', system-ui, sans-serif; background:#f4f7f5; }
+  html, body { font-family: 'Inter', system-ui, sans-serif; background:#f5f5f5; }
   .scrollbar-none::-webkit-scrollbar{ display:none; }
   .scrollbar-none{ -ms-overflow-style:none; scrollbar-width:none; }
 
@@ -43,23 +44,82 @@
   .view-fade { animation: fadeIn .25s ease; }
   @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
 
-  /* Barra de progreso circular simple con conic-gradient */
-  .progress-ring { background: conic-gradient(var(--ring-color, #22bd80) calc(var(--pct,0)*1%), #e5efe9 0); }
+  /* Barra de progreso circular simple con conic-gradient (escala de grises) */
+  .progress-ring { background: conic-gradient(var(--ring-color, #52525b) calc(var(--pct,0)*1%), #e4e4e7 0); }
 
   /* ============ ESTILOS DE IMPRESIÓN DEL VOUCHER ============ */
   @media print {
     body * { visibility: hidden !important; }
-    #printArea, #printArea * { visibility: visible !important; }
-    #printArea {
+    .print-area, .print-area * { visibility: visible !important; }
+    .print-area {
       position: absolute; top: 0; left: 0; width: 100%;
       padding: 0; margin: 0;
     }
-    #printArea .no-print { display: none !important; }
+    .print-area .no-print { display: none !important; }
     @page { margin: 8mm; size: 80mm auto; }
   }
 </style>
 </head>
 <body class="min-h-screen text-brand-950">
+
+<!-- =========================================================================
+     VISTA PÚBLICA DE SOLO-VOUCHER (para clientes morosos / enlace por WhatsApp)
+     Se activa cuando la URL trae ?ver=<idCliente>. En ese caso NO se carga
+     el resto de la aplicación (ni menú, ni listas, ni formularios): la
+     persona que abre el enlace únicamente puede ver (y opcionalmente
+     imprimir) su comprobante, nunca editar datos.
+     ⚠️ Requiere que las reglas de seguridad de Firestore permitan lectura
+     pública del documento puntual (get) en /clientes/{id} y su subcolección
+     /pagos, SIN permitir "list" sobre toda la colección ni ninguna escritura.
+========================================================================= -->
+<div id="publicVoucherView" class="hidden fixed inset-0 z-[100] bg-brand-950 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="w-full max-w-sm">
+    <div class="text-center text-white mb-4">
+      <div class="text-3xl mb-1">🤝</div>
+      <h1 class="font-extrabold text-lg">Plan de Ahorro Caridad</h1>
+      <p class="text-xs text-brand-300">Consulta de comprobante</p>
+    </div>
+    <div id="pv_loading" class="bg-white rounded-3xl p-8 text-center text-sm text-gray-500">Cargando comprobante...</div>
+    <div id="pv_error" class="hidden bg-white rounded-3xl p-8 text-center text-sm text-gray-500">No se encontró información para este enlace.</div>
+
+    <div id="pv_card" class="hidden bg-white rounded-3xl overflow-hidden">
+      <div id="printAreaPublic" class="print-area p-6">
+        <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
+          <div class="text-3xl mb-1">🤝</div>
+          <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
+          <p class="text-xs text-gray-500">Estado de Cuenta / Comprobante</p>
+        </div>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between"><span class="text-gray-500">Cliente:</span><span id="pv_cliente" class="font-semibold text-right">-</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Grupo:</span><span id="pv_grupo" class="font-semibold text-right">-</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Último pago:</span><span id="pv_fecha" class="font-semibold text-right">-</span></div>
+        </div>
+        <div class="border-t border-dashed border-gray-300 my-3"></div>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between"><span class="text-gray-500">Último abono:</span><span id="pv_cuotas" class="font-semibold">-</span></div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-500">Monto del último pago:</span>
+            <span id="pv_monto" class="font-extrabold text-brand-800 text-lg">-</span>
+          </div>
+        </div>
+        <div class="border-t border-dashed border-gray-300 my-3"></div>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between"><span class="text-gray-500">Quincenas acumuladas:</span><span id="pv_acumuladas" class="font-semibold">-</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Quincenas restantes:</span><span id="pv_restantes" class="font-semibold">-</span></div>
+        </div>
+        <div class="mt-4 text-center">
+          <span id="pv_estado" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold">-</span>
+        </div>
+        <p class="text-center text-[11px] text-gray-400 mt-5">Este es un enlace de solo lectura. Para dudas sobre tu cuenta comunícate directamente.</p>
+      </div>
+      <div class="no-print p-4 border-t border-gray-100 bg-white">
+        <button id="pv_imprimir" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
+          <span>🖨️</span> Imprimir comprobante
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- =========================================================================
      PANTALLA DE CONFIGURACIÓN INICIAL DE FIREBASE
@@ -110,7 +170,7 @@
       <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 active:scale-[.98] transition text-white font-bold py-3 rounded-xl shadow-card">
         Guardar y Conectar
       </button>
-      <p id="cfgError" class="text-xs text-red-500 text-center hidden">No se pudo conectar. Verifica tus credenciales.</p>
+      <p id="cfgError" class="text-xs font-bold text-black text-center hidden">⚠️ No se pudo conectar. Verifica tus credenciales.</p>
       <p class="text-[11px] text-gray-400 text-center pt-1">Tus credenciales se guardan solo en este dispositivo (localStorage).</p>
     </form>
   </div>
@@ -165,6 +225,10 @@
         </select>
       </div>
 
+      <button id="btnFiltroMorosos" type="button" class="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-600">
+        <span>⚠️</span> Ver solo morosos
+      </button>
+
       <div id="listaClientes" class="space-y-3"></div>
       <p id="emptyClientes" class="hidden text-center text-sm text-gray-400 py-10">Aún no hay clientes registrados.<br>Toca el botón + para agregar el primero.</p>
     </section>
@@ -187,7 +251,7 @@
   </main>
 
   <!-- ---------- BOTÓN FLOTANTE DE AGREGAR ---------- -->
-  <button id="btnFab" class="fixed z-40 bottom-24 right-1/2 translate-x-[9.5rem] sm:translate-x-40 w-14 h-14 rounded-full bg-gold-500 hover:bg-gold-600 text-white text-2xl font-bold shadow-xl flex items-center justify-center active:scale-95 transition">+</button>
+  <button id="btnFab" class="fixed z-40 bottom-24 right-1/2 translate-x-[9.5rem] sm:translate-x-40 w-14 h-14 rounded-full bg-black hover:bg-neutral-800 text-white text-2xl font-bold shadow-xl flex items-center justify-center active:scale-95 transition">+</button>
 
   <!-- ---------- NAV INFERIOR (MOBILE FIRST) ---------- -->
   <nav class="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
@@ -280,7 +344,24 @@
         <label class="text-xs font-semibold text-gray-600">Quincenas ya pagadas (al registrar)</label>
         <input required id="cliente_quincenasPagadas" type="number" min="0" step="1" value="0" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
       </div>
-      <button type="submit" class="w-full mt-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-card">Guardar Cliente</button>
+
+      <!-- Cuenta antigua: para dar de alta clientes que ya venían pagando antes de usar el sistema -->
+      <label id="cliente_cuentaAntiguaWrap" class="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 cursor-pointer">
+        <input id="cliente_cuentaAntigua" type="checkbox" class="mt-0.5">
+        <span class="text-xs text-gray-600"><span class="font-semibold text-brand-900">Es una cuenta antigua</span><br>El negocio ya venía funcionando: se registrará el adelanto indicado arriba como un pago inicial en su historial.</span>
+      </label>
+      <div id="cliente_fechaInicioWrap" class="hidden">
+        <label class="text-xs font-semibold text-gray-600">Fecha del adelanto / inicio de la cuenta</label>
+        <input id="cliente_fechaInicio" type="date" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+      </div>
+
+      <!-- Marca manual de moroso: habilita el botón de recordatorio y el filtro de morosos -->
+      <label class="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 cursor-pointer">
+        <input id="cliente_esMoroso" type="checkbox" class="mt-0.5">
+        <span class="text-xs text-gray-600"><span class="font-semibold text-brand-900">⚠️ Marcar como moroso</span><br>Aparecerá resaltado y podrás enviarle un recordatorio de pago por WhatsApp.</span>
+      </label>
+
+      <button type="submit" class="w-full mt-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl shadow-card">Guardar Cliente</button>
     </form>
   </div>
 </div>
@@ -319,7 +400,7 @@
         <p class="text-[11px] text-gray-400 mt-1">Puedes registrar 1 o varias quincenas adelantadas de una vez.</p>
       </div>
 
-      <div class="flex items-center justify-between bg-gold-50 border border-gold-400/40 rounded-2xl p-3">
+      <div class="flex items-center justify-between bg-gray-100 border border-gray-300 rounded-2xl p-3">
         <span class="text-sm font-semibold text-brand-900">Monto total a pagar</span>
         <span id="pago_montoTotal" class="text-xl font-extrabold text-brand-800">$0.00</span>
       </div>
@@ -335,7 +416,7 @@
 <div id="modalVoucher" class="fixed inset-0 z-[95] hidden bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
   <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92vh] flex flex-col">
 
-    <div id="printArea" class="p-6 overflow-y-auto scrollbar-none">
+    <div id="printArea" class="print-area p-6 overflow-y-auto scrollbar-none">
       <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
         <div class="text-3xl mb-1">🤝</div>
         <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
@@ -374,7 +455,7 @@
     </div>
 
     <div class="no-print p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
-      <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm">
+      <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
         <span>📱</span> WhatsApp
       </a>
       <button id="v_imprimir" class="flex items-center justify-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-bold py-3 rounded-xl text-sm">
@@ -393,7 +474,7 @@
     <p id="confirmTexto" class="text-sm text-gray-700 mb-5">¿Confirmas esta acción?</p>
     <div class="grid grid-cols-2 gap-3">
       <button id="confirmCancelar" class="py-2.5 rounded-xl bg-gray-100 font-semibold text-sm">Cancelar</button>
-      <button id="confirmAceptar" class="py-2.5 rounded-xl bg-red-500 text-white font-semibold text-sm">Eliminar</button>
+      <button id="confirmAceptar" class="py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-semibold text-sm">Eliminar</button>
     </div>
   </div>
 </div>
@@ -442,23 +523,98 @@ function initFirebaseApp(config) {
 }
 
 function boot() {
+  // ¿Es un enlace público de "solo voucher"? (?ver=<idCliente>)
+  // En ese caso NO se muestra la app completa: solo el comprobante de ese cliente.
+  const params = new URLSearchParams(location.search);
+  const idPublico = params.get('ver');
+
   const saved = getSavedConfig();
   const cfg = saved || (FIREBASE_CONFIG_PLACEHOLDER.apiKey ? FIREBASE_CONFIG_PLACEHOLDER : null);
-  if (cfg) {
-    try {
-      initFirebaseApp(cfg);
-      document.getElementById('configScreen').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('proyectoActivo').textContent = cfg.projectId || '-';
-      attachRealtimeListeners();
-    } catch (e) {
-      console.error(e);
-      document.getElementById('configScreen').classList.remove('hidden');
-    }
-  } else {
+  if (!cfg) {
     document.getElementById('configScreen').classList.remove('hidden');
+    return;
+  }
+  try {
+    initFirebaseApp(cfg);
+  } catch (e) {
+    console.error(e);
+    document.getElementById('configScreen').classList.remove('hidden');
+    return;
+  }
+
+  if (idPublico) {
+    mostrarVoucherPublico(idPublico);
+    return;
+  }
+
+  document.getElementById('configScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('proyectoActivo').textContent = cfg.projectId || '-';
+  attachRealtimeListeners();
+}
+
+/* ---------- 1.1 VISTA PÚBLICA DE SOLO-VOUCHER (enlace de recordatorio) ---------- */
+
+async function mostrarVoucherPublico(clienteId) {
+  document.getElementById('publicVoucherView').classList.remove('hidden');
+  try {
+    const doc = await db.collection('clientes').doc(clienteId).get();
+    if (!doc.exists) { mostrarErrorVoucherPublico(); return; }
+    const cliente = { id: doc.id, ...doc.data() };
+
+    // Trae el último pago registrado (si existe) para mostrar el detalle del último movimiento.
+    let ultimoPago = null;
+    try {
+      const pagosSnap = await db.collection('clientes').doc(clienteId)
+        .collection('pagos').orderBy('fecha', 'desc').limit(1).get();
+      if (!pagosSnap.empty) ultimoPago = pagosSnap.docs[0].data();
+    } catch (e) { /* si no hay pagos aún, se ignora */ }
+
+    const total = cliente.totalQuincenas || 0;
+    const pagadas = cliente.quincenasPagadas || 0;
+    const restantes = Math.max(total - pagadas, 0);
+    const estado = estadoCuenta(pagadas, total);
+    let grupoNombre = cliente.grupoId || '-';
+    try {
+      const gDoc = await db.collection('grupos').doc(cliente.grupoId).get();
+      if (gDoc.exists) grupoNombre = gDoc.data().nombre;
+    } catch (e) {}
+
+    document.getElementById('pv_cliente').textContent = `${cliente.nombre} ${cliente.apellido}`;
+    document.getElementById('pv_grupo').textContent = grupoNombre;
+    document.getElementById('pv_acumuladas').textContent = `${pagadas}/${total}`;
+    document.getElementById('pv_restantes').textContent = restantes;
+
+    if (ultimoPago) {
+      const fechaPago = ultimoPago.fecha && ultimoPago.fecha.toDate ? ultimoPago.fecha.toDate() : new Date();
+      document.getElementById('pv_fecha').textContent = fechaPago.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+      document.getElementById('pv_cuotas').textContent = ultimoPago.cuotasPagadas ?? '-';
+      document.getElementById('pv_monto').textContent = formatMoney(ultimoPago.monto);
+    } else {
+      document.getElementById('pv_fecha').textContent = 'Sin pagos registrados aún';
+      document.getElementById('pv_cuotas').textContent = '-';
+      document.getElementById('pv_monto').textContent = '-';
+    }
+
+    const estadoEl = document.getElementById('pv_estado');
+    estadoEl.textContent = estado;
+    estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
+      (estado === 'Completado' ? 'bg-black text-white' : 'bg-brand-100 text-brand-700');
+
+    document.getElementById('pv_loading').classList.add('hidden');
+    document.getElementById('pv_card').classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    mostrarErrorVoucherPublico();
   }
 }
+
+function mostrarErrorVoucherPublico() {
+  document.getElementById('pv_loading').classList.add('hidden');
+  document.getElementById('pv_error').classList.remove('hidden');
+}
+
+document.getElementById('pv_imprimir').addEventListener('click', () => window.print());
 
 document.getElementById('formConfig').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -658,7 +814,7 @@ function renderGrupos() {
       </div>
       <div class="flex gap-2">
         <button class="btnEditGrupo w-9 h-9 rounded-xl bg-brand-50 text-brand-700" data-id="${g.id}">✏️</button>
-        <button class="btnDelGrupo w-9 h-9 rounded-xl bg-red-50 text-red-500" data-id="${g.id}">🗑️</button>
+        <button class="btnDelGrupo w-9 h-9 rounded-xl bg-gray-100 text-gray-700" data-id="${g.id}">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -700,6 +856,7 @@ function openClienteModal(cliente=null) {
   document.getElementById('formCliente').reset();
   document.getElementById('cliente_id').value = cliente ? cliente.id : '';
   document.getElementById('tituloModalCliente').textContent = cliente ? 'Editar Cliente' : 'Nuevo Cliente';
+  document.getElementById('cliente_fechaInicioWrap').classList.add('hidden');
   if (cliente) {
     document.getElementById('cliente_nombre').value = cliente.nombre || '';
     document.getElementById('cliente_apellido').value = cliente.apellido || '';
@@ -708,23 +865,38 @@ function openClienteModal(cliente=null) {
     document.getElementById('cliente_monto').value = cliente.montoCuota || '';
     document.getElementById('cliente_totalQuincenas').value = cliente.totalQuincenas || '';
     document.getElementById('cliente_quincenasPagadas').value = cliente.quincenasPagadas || 0;
+    document.getElementById('cliente_esMoroso').checked = !!cliente.esMoroso;
+    // La opción de "cuenta antigua" solo aplica al dar de alta un cliente nuevo,
+    // no al editar uno existente (para no duplicar el pago histórico inicial).
+    document.getElementById('cliente_cuentaAntiguaWrap').classList.add('hidden');
   } else {
     document.getElementById('cliente_quincenasPagadas').value = 0;
+    document.getElementById('cliente_esMoroso').checked = false;
+    document.getElementById('cliente_cuentaAntiguaWrap').classList.remove('hidden');
   }
   openModal('modalCliente');
 }
 
+// Muestra/oculta el campo de fecha según si se marca "cuenta antigua"
+document.getElementById('cliente_cuentaAntigua').addEventListener('change', (e) => {
+  document.getElementById('cliente_fechaInicioWrap').classList.toggle('hidden', !e.target.checked);
+});
+
 document.getElementById('formCliente').addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('cliente_id').value;
+  const esCuentaAntigua = document.getElementById('cliente_cuentaAntigua').checked;
+  const quincenasPagadas = parseInt(document.getElementById('cliente_quincenasPagadas').value) || 0;
+  const montoCuota = parseFloat(document.getElementById('cliente_monto').value) || 0;
   const data = {
     nombre: document.getElementById('cliente_nombre').value.trim(),
     apellido: document.getElementById('cliente_apellido').value.trim(),
     telefono: soloDigitos(document.getElementById('cliente_telefono').value),
     grupoId: document.getElementById('cliente_grupo').value,
-    montoCuota: parseFloat(document.getElementById('cliente_monto').value) || 0,
+    montoCuota,
     totalQuincenas: parseInt(document.getElementById('cliente_totalQuincenas').value) || 0,
-    quincenasPagadas: parseInt(document.getElementById('cliente_quincenasPagadas').value) || 0,
+    quincenasPagadas,
+    esMoroso: document.getElementById('cliente_esMoroso').checked,
     actualizado: firebase.firestore.FieldValue.serverTimestamp(),
   };
   try {
@@ -733,7 +905,21 @@ document.getElementById('formCliente').addEventListener('submit', async (e) => {
       showToast('Cliente actualizado');
     } else {
       data.creado = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('clientes').add(data);
+      const nuevoRef = await db.collection('clientes').add(data);
+
+      // Si es una cuenta antigua con adelanto, se deja constancia del
+      // adelanto ya realizado como un pago histórico en su expediente.
+      if (esCuentaAntigua && quincenasPagadas > 0) {
+        const fechaInicioStr = document.getElementById('cliente_fechaInicio').value;
+        const fechaInicio = fechaInicioStr ? new Date(fechaInicioStr + 'T12:00:00') : new Date();
+        await nuevoRef.collection('pagos').add({
+          cuotasPagadas: quincenasPagadas,
+          monto: quincenasPagadas * montoCuota,
+          quincenasAcumuladasDespues: quincenasPagadas,
+          nota: 'Adelanto de cuenta antigua registrado al dar de alta el cliente',
+          fecha: firebase.firestore.Timestamp.fromDate(fechaInicio),
+        });
+      }
       showToast('Cliente registrado');
     }
     closeModal('modalCliente');
@@ -745,6 +931,19 @@ function nombreGrupo(id) {
   return g ? g.nombre : 'Sin grupo';
 }
 
+let soloMorosos = false;
+document.getElementById('btnFiltroMorosos').addEventListener('click', () => {
+  soloMorosos = !soloMorosos;
+  const btn = document.getElementById('btnFiltroMorosos');
+  btn.classList.toggle('bg-black', soloMorosos);
+  btn.classList.toggle('text-white', soloMorosos);
+  btn.classList.toggle('border-black', soloMorosos);
+  btn.classList.toggle('bg-white', !soloMorosos);
+  btn.classList.toggle('text-gray-600', !soloMorosos);
+  btn.classList.toggle('border-gray-300', !soloMorosos);
+  renderClientes();
+});
+
 function renderClientes() {
   const cont = document.getElementById('listaClientes');
   const empty = document.getElementById('emptyClientes');
@@ -755,12 +954,14 @@ function renderClientes() {
     const nombreCompleto = `${c.nombre} ${c.apellido}`.toLowerCase();
     const pasaBusqueda = !busqueda || nombreCompleto.includes(busqueda);
     const pasaGrupo = !filtroGrupo || c.grupoId === filtroGrupo;
-    return pasaBusqueda && pasaGrupo;
+    const pasaMoroso = !soloMorosos || c.esMoroso;
+    return pasaBusqueda && pasaGrupo && pasaMoroso;
   });
 
   if (!lista.length) {
     cont.innerHTML = '';
     empty.classList.remove('hidden');
+    empty.textContent = soloMorosos ? 'No hay clientes marcados como morosos.' : 'Aún no hay clientes registrados. Toca el botón + para agregar el primero.';
     return;
   }
   empty.classList.add('hidden');
@@ -772,27 +973,32 @@ function renderClientes() {
     const pct = total ? Math.min(Math.round((pagadas/total)*100), 100) : 0;
     const completado = pagadas >= total && total > 0;
     return `
-    <div class="bg-white rounded-2xl shadow-card p-4">
+    <div class="bg-white rounded-2xl shadow-card p-4 ${c.esMoroso ? 'border-2 border-black' : ''}">
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
-          <p class="font-bold text-brand-900 truncate">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</p>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <p class="font-bold text-brand-900 truncate">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</p>
+            ${c.esMoroso ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black text-white shrink-0">⚠️ MOROSO</span>' : ''}
+          </div>
           <p class="text-xs text-gray-500">${escapeHtml(nombreGrupo(c.grupoId))} &middot; ${formatMoney(c.montoCuota)}/quincena</p>
           <p class="text-xs text-gray-400 mt-0.5">📞 ${escapeHtml(c.telefono)}</p>
         </div>
-        <div class="w-12 h-12 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 progress-ring" style="--pct:${pct}; --ring-color:${completado ? '#e0ab1f' : '#22bd80'};">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 progress-ring" style="--pct:${pct}; --ring-color:${completado ? '#000000' : '#52525b'};">
           <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-brand-900">${pct}%</div>
         </div>
       </div>
 
       <div class="flex items-center justify-between mt-3 text-xs">
         <span class="font-semibold text-gray-600">${pagadas}/${total} quincenas &middot; ${restantes} restantes</span>
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${completado ? 'bg-gold-500/20 text-gold-600' : 'bg-brand-100 text-brand-700'}">${completado ? 'Completado' : 'Al día'}</span>
+        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${completado ? 'bg-black text-white' : 'bg-brand-100 text-brand-700'}">${completado ? 'Completado' : 'Al día'}</span>
       </div>
 
-      <div class="grid grid-cols-3 gap-2 mt-3">
-        <button class="btnPagar col-span-1 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">💵 Pagar</button>
-        <button class="btnEditCliente bg-gray-100 text-gray-600 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">✏️ Editar</button>
-        <button class="btnDelCliente bg-red-50 text-red-500 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🗑️ Borrar</button>
+      <button class="btnPagar w-full mt-3 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-black hover:bg-neutral-800 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">💵 Registrar Pago</button>
+
+      <div class="grid grid-cols-3 gap-2 mt-2">
+        <button class="btnRecordatorio bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🔔 Recordar</button>
+        <button class="btnEditCliente bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">✏️ Editar</button>
+        <button class="btnDelCliente bg-gray-100 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">🗑️ Borrar</button>
       </div>
     </div>`;
   }).join('');
@@ -810,10 +1016,47 @@ function renderClientes() {
   cont.querySelectorAll('.btnPagar').forEach(b => b.addEventListener('click', () => {
     openPagoModal(clientes.find(c => c.id === b.dataset.id));
   }));
+  cont.querySelectorAll('.btnRecordatorio').forEach(b => b.addEventListener('click', () => {
+    enviarRecordatorio(clientes.find(c => c.id === b.dataset.id));
+  }));
 }
 
 document.getElementById('buscarCliente').addEventListener('input', renderClientes);
 document.getElementById('filtroGrupoClientes').addEventListener('change', renderClientes);
+
+/* ---------- 6.1 RECORDATORIO A MOROSOS + ENLACE DE VOUCHER ONLINE (solo lectura) ---------- */
+
+// Construye la URL pública de "solo voucher" para un cliente: al abrirla,
+// la app detecta el parámetro ?ver= y muestra ÚNICAMENTE su comprobante
+// (sin menú, sin listas de otros clientes, sin posibilidad de editar nada).
+function urlVoucherPublico(clienteId) {
+  const base = location.origin + location.pathname;
+  return `${base}?ver=${clienteId}`;
+}
+
+function enviarRecordatorio(cliente) {
+  const total = cliente.totalQuincenas || 0;
+  const pagadas = cliente.quincenasPagadas || 0;
+  const restantes = Math.max(total - pagadas, 0);
+  const link = urlVoucherPublico(cliente.id);
+
+  const mensaje =
+`*Plan de Ahorro Caridad* 🤝
+Recordatorio de Pago
+
+Hola ${cliente.nombre}, te recordamos que tu cuenta del grupo "${nombreGrupo(cliente.grupoId)}" tiene pagos pendientes.
+
+Quincenas pagadas: ${pagadas}/${total}
+Quincenas pendientes: ${restantes}
+
+Puedes consultar tu comprobante y estado de cuenta aquí:
+${link}
+
+Por favor ponte al día lo antes posible. ¡Gracias! 🙏`;
+
+  const telefono = soloDigitos(cliente.telefono);
+  window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
+}
 
 /* ---------- 7. MÓDULO DE PAGOS FLEXIBLES (15 y último) ---------- */
 
@@ -913,7 +1156,7 @@ function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fec
   const estadoEl = document.getElementById('v_estado');
   estadoEl.textContent = estado;
   estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
-    (estado === 'Completado' ? 'bg-gold-500/20 text-gold-600' : 'bg-brand-100 text-brand-700');
+    (estado === 'Completado' ? 'bg-black text-white' : 'bg-brand-100 text-brand-700');
 
   // Construye el mensaje formateado para WhatsApp
   const mensaje =

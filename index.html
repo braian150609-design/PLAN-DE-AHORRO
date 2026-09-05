@@ -1281,25 +1281,30 @@ function urlVoucherPublico(clienteId) {
   return `${base}?ver=${clienteId}`;
 }
 
+// WhatsApp (sobre todo en iPhone) falla al abrir un link "api.whatsapp.com/send"
+// cuando el texto precargado es muy largo, o cuando el número no tiene al
+// menos el código de país + número (8 dígitos como mínimo razonable).
+// Por eso los mensajes se mantienen cortos: el detalle completo vive en el
+// enlace del voucher, no en el propio mensaje de WhatsApp.
+function telefonoValido(telefono) {
+  return soloDigitos(telefono).length >= 8;
+}
+
 function enviarRecordatorio(cliente) {
-  const total = cliente.totalQuincenas || 0;
-  const pagadas = cliente.quincenasPagadas || 0;
-  const restantes = Math.max(total - pagadas, 0);
+  if (!telefonoValido(cliente.telefono)) {
+    showToast('Este cliente no tiene un teléfono válido registrado');
+    return;
+  }
+
+  const restantes = Math.max((cliente.totalQuincenas || 0) - (cliente.quincenasPagadas || 0), 0);
   const link = urlVoucherPublico(cliente.id);
 
   const mensaje =
-`*Plan de Ahorro Caridad* 🤝
-Recordatorio de Pago
+`*Plan de Ahorro Caridad*
+Hola ${cliente.nombre}, tienes ${restantes} quincena(s) pendiente(s) de pago.
 
-Hola ${cliente.nombre}, te recordamos que tu cuenta del grupo "${nombreGrupo(cliente.grupoId)}" tiene pagos pendientes.
-
-Quincenas pagadas: ${pagadas}/${total}
-Quincenas pendientes: ${restantes}
-
-Puedes consultar tu comprobante y estado de cuenta aquí:
-${link}
-
-Por favor ponte al día lo antes posible. ¡Gracias! 🙏`;
+Consulta tu comprobante aquí:
+${link}`;
 
   const telefono = soloDigitos(cliente.telefono);
   window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -1414,35 +1419,29 @@ function mostrarVoucher({ cliente, cuotas, monto, pagadas, restantes, total, fec
   estadoEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-bold ' +
     (estado === 'Completado' ? 'bg-black text-white' : 'bg-brand-100 text-brand-700');
 
-  // Construye el mensaje formateado para WhatsApp, incluyendo el enlace al
-  // estado de cuenta online para que el cliente lo pueda consultar cuando quiera.
+  // Mensaje corto para WhatsApp: el detalle completo (contrato, pagado,
+  // pendiente, historial) ya se ve en el enlace del voucher — meterlo todo
+  // en el texto del mensaje hace que WhatsApp (sobre todo en iPhone) falle
+  // al abrirlo por exceso de longitud.
   const mensaje =
-`*Plan de Ahorro Caridad* 🤝
-Comprobante de Pago
-Ref. ${referencia}
+`*Plan de Ahorro Caridad*
+Comprobante Ref. ${referencia}
+Pagaste ${formatMoney(monto)} (${cuotas} cuota/s)
+Quincenas: ${pagadas}/${total} — Restan ${restantes}
 
-Cliente: ${cliente.nombre} ${cliente.apellido}
-Grupo: ${grupoNombre}
-Fecha: ${fechaStr} - ${horaStr}
+Ver tu comprobante y estado de cuenta:
+${link}`;
 
-Cuotas abonadas ahora: ${cuotas}
-Monto pagado: ${formatMoney(monto)}
-
-Contrato: ${formatMoney(montoContrato)}
-Pagado a la fecha: ${formatMoney(montoPagado)}
-Pendiente por pagar: ${formatMoney(montoPendiente)}
-
-Quincenas acumuladas: ${pagadas}/${total}
-Quincenas restantes: ${restantes}
-Estado de cuenta: *${estado}*
-
-Consulta tu estado de cuenta cuando quieras en este enlace:
-${link}
-
-¡Gracias por su pago puntual! 🙏`;
-
-  const telefono = soloDigitos(cliente.telefono);
-  document.getElementById('v_whatsapp').href = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+  const btnWhatsapp = document.getElementById('v_whatsapp');
+  if (telefonoValido(cliente.telefono)) {
+    const telefono = soloDigitos(cliente.telefono);
+    btnWhatsapp.href = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+    btnWhatsapp.classList.remove('opacity-40', 'pointer-events-none');
+  } else {
+    btnWhatsapp.href = '#';
+    btnWhatsapp.classList.add('opacity-40', 'pointer-events-none');
+    showToast('Este cliente no tiene un teléfono válido registrado');
+  }
 
   openModal('modalVoucher');
 }

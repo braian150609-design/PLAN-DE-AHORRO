@@ -1345,24 +1345,62 @@ function telefonoValido(telefono) {
   return soloDigitos(telefono).length >= 8;
 }
 
-function enviarRecordatorio(cliente) {
+async function enviarRecordatorio(cliente) {
   if (!telefonoValido(cliente.telefono)) {
     showToast('Este cliente no tiene un teléfono válido registrado');
     return;
   }
 
-  const restantes = Math.max((cliente.totalQuincenas || 0) - (cliente.quincenasPagadas || 0), 0);
-  const link = urlVoucherPublico(cliente.id);
+  // Abrimos la pestaña YA (dentro del mismo click del usuario) para que
+  // Safari/iOS no la bloquee como popup; la redirigimos a WhatsApp en
+  // cuanto el mensaje con el historial esté armado.
+  const ventana = window.open('', '_blank');
+
+  const total = cliente.totalQuincenas || 0;
+  const pagadas = cliente.quincenasPagadas || 0;
+  const restantes = Math.max(total - pagadas, 0);
+
+  // Trae el historial completo de pagos y lo escribe como texto plano
+  // (fecha, hora, cuotas, monto y referencia de cada uno) en vez de un link.
+  let historialTexto = 'Sin pagos registrados aún.';
+  try {
+    const pagosSnap = await db.collection('clientes').doc(cliente.id)
+      .collection('pagos').orderBy('fecha', 'asc').get();
+    if (!pagosSnap.empty) {
+      historialTexto = pagosSnap.docs.map(d => {
+        const p = d.data();
+        const f = p.fecha && p.fecha.toDate ? p.fecha.toDate() : null;
+        const fechaStr = f ? f.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+        const horaStr = f ? f.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '-';
+        return `- ${fechaStr} ${horaStr}: ${p.cuotasPagadas ?? '-'} cuota(s), ${formatMoney(p.monto)} (Ref. ${folioCorto(d.id)})`;
+      }).join('\n');
+    }
+  } catch (e) {
+    console.error(e);
+  }
 
   const mensaje =
 `*Plan de Ahorro Caridad*
-Hola ${cliente.nombre}, tienes ${restantes} quincena(s) pendiente(s) de pago.
+Hola ${cliente.nombre}, este es tu estado de cuenta.
 
-Consulta tu comprobante aquí:
-${link}`;
+Grupo: ${nombreGrupo(cliente.grupoId)}
+Quincenas pagadas: ${pagadas}/${total}
+Quincenas pendientes: ${restantes}
+
+Historial de pagos:
+${historialTexto}`;
+
+  if (mensaje.length > 1200) {
+    showToast('⚠️ El historial es largo; si WhatsApp no abre, usa "Descargar Voucher (PNG)"');
+  }
 
   const telefono = soloDigitos(cliente.telefono);
-  window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`, '_blank');
+  const url = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+  if (ventana) {
+    ventana.location.href = url;
+  } else {
+    window.open(url, '_blank');
+  }
 }
 
 /* ---------- 7. MÓDULO DE PAGOS FLEXIBLES (15 y último) ---------- */

@@ -40,6 +40,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
+<!-- ===================== html2canvas: para exportar el voucher como imagen PNG ===================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
   html, body { font-family: 'Inter', system-ui, sans-serif; background:#f5f5f5; }
   .scrollbar-none::-webkit-scrollbar{ display:none; }
@@ -137,8 +140,12 @@
 
         <p class="text-center text-[11px] text-gray-400 mt-5">Este es un enlace de solo lectura. Para dudas sobre tu cuenta comunícate directamente.</p>
       </div>
-      <div class="no-print p-4 border-t border-gray-100 bg-white">
-        <button id="pv_imprimir" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
+      <div class="no-print p-4 border-t border-gray-100 bg-white space-y-3">
+        <button id="pv_descargar" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 12l4.5 4.5m0 0 4.5-4.5m-4.5 4.5V3"/></svg>
+          <span id="pv_descargarTexto">Descargar Voucher (PNG)</span>
+        </button>
+        <button id="pv_imprimir" class="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl text-sm">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
           Imprimir comprobante
         </button>
@@ -532,15 +539,21 @@
       <p class="text-center text-[11px] text-gray-400 mt-5">¡Gracias por su puntualidad y confianza!<br>Consulta tu estado de cuenta cuando quieras escaneando o abriendo tu enlace personal.</p>
     </div>
 
-    <div class="no-print p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-white">
-      <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20.25 8.51c.88.28 1.5 1.13 1.5 2.1v4.28c0 1.14-.85 2.1-1.98 2.2-.34.02-.68.05-1.02.07v3.09l-3-3c-1.35 0-2.7-.06-4.02-.17a2.1 2.1 0 0 1-.82-.24M20.25 8.51a2.1 2.1 0 0 0-.48-.1 48.6 48.6 0 0 0-8.05 0c-1.13.1-1.97 1.06-1.97 2.2v4.28c0 .84.46 1.58 1.15 1.95M20.25 8.51V6.64c0-1.62-1.15-3.03-2.76-3.24A48.5 48.5 0 0 0 11.25 3c-2.12 0-4.2.14-6.24.4-1.6.21-2.76 1.62-2.76 3.24v6.23c0 1.62 1.15 3.03 2.76 3.24.58.07 1.16.14 1.74.19V21l4.16-4.16"/></svg>
-        WhatsApp
-      </a>
-      <button id="v_imprimir" class="flex items-center justify-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-bold py-3 rounded-xl text-sm">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
-        Imprimir
+    <div class="no-print p-4 border-t border-gray-100 bg-white space-y-3">
+      <button id="v_descargar" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 12l4.5 4.5m0 0 4.5-4.5m-4.5 4.5V3"/></svg>
+        <span id="v_descargarTexto">Descargar Voucher (PNG)</span>
       </button>
+      <div class="grid grid-cols-2 gap-3">
+        <a id="v_whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl text-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20.25 8.51c.88.28 1.5 1.13 1.5 2.1v4.28c0 1.14-.85 2.1-1.98 2.2-.34.02-.68.05-1.02.07v3.09l-3-3c-1.35 0-2.7-.06-4.02-.17a2.1 2.1 0 0 1-.82-.24M20.25 8.51a2.1 2.1 0 0 0-.48-.1 48.6 48.6 0 0 0-8.05 0c-1.13.1-1.97 1.06-1.97 2.2v4.28c0 .84.46 1.58 1.15 1.95M20.25 8.51V6.64c0-1.62-1.15-3.03-2.76-3.24A48.5 48.5 0 0 0 11.25 3c-2.12 0-4.2.14-6.24.4-1.6.21-2.76 1.62-2.76 3.24v6.23c0 1.62 1.15 3.03 2.76 3.24.58.07 1.16.14 1.74.19V21l4.16-4.16"/></svg>
+          WhatsApp
+        </a>
+        <button id="v_imprimir" class="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl text-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
+          Imprimir
+        </button>
+      </div>
     </div>
     <button class="no-print btnCerrarModal text-center text-xs text-gray-400 py-2" data-modal="modalVoucher">Cerrar</button>
   </div>
@@ -1489,6 +1502,60 @@ ${link}`;
 }
 
 document.getElementById('v_imprimir').addEventListener('click', () => window.print());
+
+/* ---------- 8.1 DESCARGAR / COMPARTIR EL VOUCHER COMO IMAGEN PNG ---------- */
+// Convierte el recibo (#printArea) a una imagen PNG con html2canvas. En
+// celulares que soportan compartir archivos (navigator.share con "files"),
+// abre directamente el panel nativo para mandarlo por WhatsApp, Fotos, etc.
+// Si el navegador no lo soporta, simplemente descarga el PNG.
+async function generarPngVoucher(idElemento) {
+  const el = document.getElementById(idElemento);
+  const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
+async function descargarOCompartirVoucher(idElemento, nombreArchivo, boton, textoSpanId) {
+  const textoSpan = document.getElementById(textoSpanId);
+  const textoOriginal = textoSpan ? textoSpan.textContent : null;
+  boton.disabled = true;
+  if (textoSpan) textoSpan.textContent = 'Generando imagen...';
+  try {
+    const blob = await generarPngVoucher(idElemento);
+    const archivo = new File([blob], nombreArchivo, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      try {
+        await navigator.share({ files: [archivo], title: 'Plan de Ahorro Caridad' });
+      } catch (e) {
+        // El usuario canceló el panel de compartir: no es un error real.
+      }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nombreArchivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      showToast('Voucher descargado');
+    }
+  } catch (err) {
+    console.error(err);
+    showToast('No se pudo generar la imagen del voucher');
+  } finally {
+    boton.disabled = false;
+    if (textoSpan && textoOriginal) textoSpan.textContent = textoOriginal;
+  }
+}
+
+document.getElementById('v_descargar').addEventListener('click', (e) => {
+  descargarOCompartirVoucher('printArea', 'voucher-plan-de-ahorro-caridad.png', e.currentTarget, 'v_descargarTexto');
+});
+
+document.getElementById('pv_descargar').addEventListener('click', (e) => {
+  descargarOCompartirVoucher('printAreaPublic', 'voucher-plan-de-ahorro-caridad.png', e.currentTarget, 'pv_descargarTexto');
+});
 
 /* ---------- 9. UTILIDAD DE ESCAPE HTML (seguridad básica al renderizar) ---------- */
 

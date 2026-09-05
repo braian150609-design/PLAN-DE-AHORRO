@@ -560,6 +560,47 @@
 </div>
 
 <!-- =========================================================================
+     MODAL: CARTÓN DE PAGOS IMPRIMIBLE
+     Una tarjeta con una casilla por quincena para que el propio cliente la
+     vaya tachando (a mano, con lápiz o bolígrafo) conforme va pagando.
+========================================================================= -->
+<div id="modalCarton" class="fixed inset-0 z-[95] hidden bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[92vh] flex flex-col">
+
+    <div id="printAreaCarton" class="print-area p-6 overflow-y-auto scrollbar-none">
+      <div class="text-center border-b border-dashed border-gray-300 pb-4 mb-4">
+        <div class="flex items-center justify-center mb-1 text-brand-900">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.3 12.3l1.9 1.9L15.2 10"/></svg>
+        </div>
+        <h2 class="font-extrabold text-lg text-brand-900">Plan de Ahorro Caridad</h2>
+        <p class="text-xs text-gray-500">Cartón de Pagos</p>
+      </div>
+
+      <div class="space-y-1.5 text-sm mb-4">
+        <div class="flex justify-between"><span class="text-gray-500">Cliente:</span><span id="ct_cliente" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Grupo:</span><span id="ct_grupo" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Cuota quincenal:</span><span id="ct_monto" class="font-semibold text-right">-</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Ciclo:</span><span id="ct_ciclo" class="font-semibold text-right">-</span></div>
+      </div>
+
+      <p class="text-[11px] text-gray-500 text-center mb-3">Marca (✕) cada quincena en cuanto la pagues</p>
+
+      <div id="ct_grid" class="grid grid-cols-4 gap-2"></div>
+
+      <p class="text-center text-[11px] text-gray-400 mt-5">Conserva este cartón como tu control personal de pagos.</p>
+    </div>
+
+    <div class="no-print p-4 border-t border-gray-100 bg-white">
+      <button id="ct_imprimir" class="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 text-white font-bold py-3 rounded-xl text-sm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M6.72 13.83a42.1 42.1 0 0 1 10.56 0M6.34 18l-.23 2.52a1.13 1.13 0 0 0 1.12 1.23h9.54a1.13 1.13 0 0 0 1.12-1.23L17.66 18m-11.32 0h-1.09A2.25 2.25 0 0 1 3 15.75V9.46c0-1.08.77-2.02 1.84-2.18a48 48 0 0 1 14.32 0c1.07.16 1.84 1.1 1.84 2.18v6.29A2.25 2.25 0 0 1 18.75 18h-1.09M6.34 18h11.32M18 10.5h.01M15 10.5h.01"/></svg>
+        Imprimir Cartón
+      </button>
+    </div>
+    <button class="no-print btnCerrarModal text-center text-xs text-gray-400 py-2" data-modal="modalCarton">Cerrar</button>
+  </div>
+</div>
+
+<!-- =========================================================================
      MODAL DE CONFIRMACIÓN (eliminar)
 ========================================================================= -->
 <div id="modalConfirm" class="fixed inset-0 z-[95] hidden bg-black/50 flex items-center justify-center p-4">
@@ -829,6 +870,7 @@ const ICON = {
   warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M12 9v3.75m-9.3 3.38c-.87 1.5.22 3.37 1.95 3.37h14.7c1.73 0 2.82-1.87 1.95-3.37L13.95 3.38c-.87-1.5-3.03-1.5-3.9 0L2.7 16.13ZM12 15.75h.007v.008H12v-.008Z"/></svg>',
   calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0V11.25A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>',
+  ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5v2.25a1.5 1.5 0 0 0 0 3v2.25a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 15v-2.25a1.5 1.5 0 0 0 0-3V7.5Z"/><path d="M9 6.5v11" stroke-dasharray="2 2.5"/></svg>',
 };
 
 // Determina la categoría de un cliente para el color-coding de la interfaz:
@@ -1171,10 +1213,11 @@ function renderTarjetaCliente(c) {
 
       <button class="btnPagar w-full mt-3 flex items-center justify-center gap-2 ${completado ? 'opacity-40 pointer-events-none' : ''} bg-black hover:bg-neutral-800 text-white text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.cash} Registrar Pago</button>
 
-      <div class="grid grid-cols-3 gap-2 mt-2">
-        <button class="btnRecordatorio flex items-center justify-center gap-1 bg-white/80 border border-gray-200 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.bell} Recordar</button>
-        <button class="btnEditCliente flex items-center justify-center gap-1 bg-white/80 border border-gray-200 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.pencil} Editar</button>
-        <button class="btnDelCliente flex items-center justify-center gap-1 bg-white/80 border border-gray-200 text-gray-700 text-xs font-bold py-2.5 rounded-xl" data-id="${c.id}">${ICON.trash} Borrar</button>
+      <div class="grid grid-cols-4 gap-1.5 mt-2">
+        <button class="btnRecordatorio flex flex-col items-center justify-center gap-0.5 bg-white/80 border border-gray-200 text-gray-700 text-[10px] font-bold py-2 rounded-xl" data-id="${c.id}">${ICON.bell}Recordar</button>
+        <button class="btnCarton flex flex-col items-center justify-center gap-0.5 bg-white/80 border border-gray-200 text-gray-700 text-[10px] font-bold py-2 rounded-xl" data-id="${c.id}">${ICON.ticket}Cartón</button>
+        <button class="btnEditCliente flex flex-col items-center justify-center gap-0.5 bg-white/80 border border-gray-200 text-gray-700 text-[10px] font-bold py-2 rounded-xl" data-id="${c.id}">${ICON.pencil}Editar</button>
+        <button class="btnDelCliente flex flex-col items-center justify-center gap-0.5 bg-white/80 border border-gray-200 text-gray-700 text-[10px] font-bold py-2 rounded-xl" data-id="${c.id}">${ICON.trash}Borrar</button>
       </div>
     </div>`;
 }
@@ -1305,6 +1348,9 @@ document.getElementById('view-clientes').addEventListener('click', (e) => {
 
   const btnRecordar = e.target.closest('.btnRecordatorio');
   if (btnRecordar) { enviarRecordatorio(clientes.find(c => c.id === btnRecordar.dataset.id)); return; }
+
+  const btnCarton = e.target.closest('.btnCarton');
+  if (btnCarton) { mostrarCarton(clientes.find(c => c.id === btnCarton.dataset.id)); return; }
 
   const headerGrupo = e.target.closest('.acordeonGrupoHeader');
   if (headerGrupo) {
@@ -1540,6 +1586,61 @@ ${link}`;
 }
 
 document.getElementById('v_imprimir').addEventListener('click', () => window.print());
+
+/* ---------- 8.2 CARTÓN DE PAGOS IMPRIMIBLE (para que el cliente lo tache a mano) ---------- */
+
+// Calcula las fechas estimadas de cada quincena (día 15 y último día de cada
+// mes) a partir de la fecha de inicio del grupo, para imprimirlas en el
+// cartón junto al número de cada casilla.
+function generarFechasQuincenas(fechaInicioStr, totalQuincenas) {
+  const fechas = [];
+  if (!fechaInicioStr || !totalQuincenas) return fechas;
+  const inicio = new Date(fechaInicioStr + 'T00:00:00');
+  let year = inicio.getFullYear();
+  let month = inicio.getMonth();
+  let guard = 0; // evita bucles infinitos ante datos inválidos
+  while (fechas.length < totalQuincenas && guard < 200) {
+    const dia15 = new Date(year, month, 15);
+    const ultimoDia = new Date(year, month + 1, 0);
+    [dia15, ultimoDia].forEach(fecha => {
+      if (fechas.length < totalQuincenas && fecha >= inicio) fechas.push(fecha);
+    });
+    month++;
+    guard++;
+  }
+  return fechas;
+}
+
+function mostrarCarton(cliente) {
+  const grupo = grupos.find(g => g.id === cliente.grupoId);
+  const total = cliente.totalQuincenas || 0;
+  const pagadas = cliente.quincenasPagadas || 0;
+  const fechas = generarFechasQuincenas(grupo ? grupo.fechaInicio : '', total);
+
+  document.getElementById('ct_cliente').textContent = `${cliente.nombre} ${cliente.apellido}`;
+  document.getElementById('ct_grupo').textContent = nombreGrupo(cliente.grupoId);
+  document.getElementById('ct_monto').textContent = formatMoney(cliente.montoCuota);
+  document.getElementById('ct_ciclo').textContent = (grupo && grupo.fechaInicio && grupo.fechaCierre)
+    ? `${formatFechaCorta(grupo.fechaInicio)} — ${formatFechaCorta(grupo.fechaCierre)}`
+    : `${total} quincenas`;
+
+  const grid = document.getElementById('ct_grid');
+  grid.innerHTML = Array.from({ length: total }, (_, i) => {
+    const numero = i + 1;
+    const yaPagada = numero <= pagadas;
+    const fechaStr = fechas[i] ? fechas[i].toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '';
+    return `
+    <div class="border-2 ${yaPagada ? 'border-brand-900 bg-gray-100' : 'border-gray-300'} rounded-lg flex flex-col items-center justify-center py-2 gap-0.5">
+      <span class="text-[9px] text-gray-500">#${numero}</span>
+      ${fechaStr ? `<span class="text-[8px] text-gray-400">${fechaStr}</span>` : ''}
+      <span class="text-lg font-extrabold leading-none ${yaPagada ? 'text-brand-900' : 'text-gray-300'}">${yaPagada ? '✕' : ''}</span>
+    </div>`;
+  }).join('');
+
+  openModal('modalCarton');
+}
+
+document.getElementById('ct_imprimir').addEventListener('click', () => window.print());
 
 /* ---------- 8.1 DESCARGAR / COMPARTIR EL VOUCHER COMO IMAGEN PNG ---------- */
 // Convierte el recibo (#printArea) a una imagen PNG con html2canvas. En
